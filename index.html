@@ -736,7 +736,7 @@
   <div id="toastContainer" class="toast-container"></div>
 
   <!-- Header -->
-  <header>
+ <header>
     <div class="logo-area">
       <h1>Switch On SL Tracker</h1>
       <div class="cloud-status">
@@ -744,12 +744,8 @@
         <span id="statusText">Desconectado</span>
       </div>
     </div>
-    <div class="actions" style="align-items: center;">
-      <!-- Auth Status / Login UI -->
-      <div id="authContainer" class="actions" style="align-items: center;">
-        <span class="subtle" style="font-size: 13px;">Cargando usuario...</span>
-      </div>
-      <button class="secondary" id="openSetupModalBtn" style="padding: 8px 12px; font-size: 13px;">Configurar Cloud</button>
+    <div id="authContainer" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+      <span class="subtle" style="font-size: 13px;">Cargando usuario...</span>
     </div>
   </header>
 
@@ -1040,6 +1036,7 @@
     }
 
     // UI Auth controller
+    // Controlador de la interfaz de autenticación (Soporta Email y Contraseña)
     function updateAuthUI() {
       if (!isCloudActive) {
         authContainer.innerHTML = `
@@ -1050,36 +1047,106 @@
         return;
       }
 
-      if (!currentUser) {
+      if (!auth.currentUser) {
         authContainer.innerHTML = `<span class="subtle" style="font-size: 13px;">Iniciando sesión...</span>`;
         return;
       }
 
-      const isAnonymous = currentUser.isAnonymous;
-      const displayId = isAnonymous ? `Anónimo (${currentUser.uid.substring(0,6)})` : currentUser.email;
+      if (auth.currentUser.isAnonymous) {
+        authContainer.innerHTML = `
+          <div class="actions" style="align-items: center; gap: 8px;">
+            <span class="pill active" style="font-size: 11px; padding: 3px 8px;">☁️ Sesión Temporal</span>
+            <input type="email" id="authEmail" placeholder="Tu Email" style="padding: 6px 10px; font-size: 12px; width: 140px; background: #081224;">
+            <input type="password" id="authPass" placeholder="Contraseña" style="padding: 6px 10px; font-size: 12px; width: 110px; background: #081224;">
+            <button class="primary" id="linkAccountBtn" style="padding: 6px 12px; font-size: 12px;">Vincular y Guardar Datos</button>
+            <button class="secondary" id="loginExistingBtn" style="padding: 6px 12px; font-size: 12px;">Ya tengo cuenta</button>
+            <button class="secondary" id="openSetupModalBtn" style="padding: 6px 10px; font-size: 12px;">⚙️</button>
+          </div>
+        `;
 
-      authContainer.innerHTML = `
-        <div class="auth-badge">
-          <span>👤 ${displayId}</span>
-          <button class="danger" id="logoutBtn" style="background: none; border: none; padding: 0 4px; cursor: pointer; font-size: 11px; margin-left: 8px;">
-            Salir
-          </button>
-        </div>
-      `;
+        // Botón para convertir la cuenta temporal en permanente (No pierde los trades ya cargados)
+        document.getElementById('linkAccountBtn').addEventListener('click', async () => {
+          const email = document.getElementById('authEmail').value.trim();
+          const pass = document.getElementById('authPass').value;
+          if (!email || !pass) return showToast("Completa email y contraseña", "warning");
+          
+          try {
+            // Nota técnica: Se usa createUser ya que la sesión actual contiene los datos que queremos conservar
+            await createUserWithEmailAndPassword(auth, email, pass);
+            showToast("¡Cuenta creada! Datos sincronizados permanentemente.", "success");
+          } catch (err) {
+            // Si el correo ya existe, avisamos al usuario
+            if (err.code === "auth/email-already-in-use") {
+              showToast("El email ya está registrado. Usa 'Ya tengo cuenta'.", "error");
+            } else {
+              showToast(err.message, "error");
+            }
+          }
+        });
 
-      document.getElementById('logoutBtn').addEventListener('click', async () => {
-        showCustomModal(
-          "Cerrar sesión", 
-          "¿Quieres cerrar tu sesión? Si usas el modo anónimo y sales, no podrás volver a entrar a esta misma cuenta desde otro navegador.", 
-          true, 
-          async () => {
+        // Botón para cambiar a un login tradicional
+        document.getElementById('loginExistingBtn').addEventListener('click', () => {
+          currentUser = null; 
+          auth.signOut().then(() => {
+            // Provoca el renderizado del formulario de login limpio
+            setTimeout(() => {
+              authContainer.innerHTML = `
+                <div class="actions" style="align-items: center; gap: 8px;">
+                  <input type="email" id="loginEmail" placeholder="Tu Email" style="padding: 6px 10px; font-size: 12px; width: 150px; background: #081224;">
+                  <input type="password" id="loginPass" placeholder="Contraseña" style="padding: 6px 10px; font-size: 12px; width: 120px; background: #081224;">
+                  <button class="primary" id="doLoginBtn" style="padding: 6px 12px; font-size: 12px;">Entrar</button>
+                  <button class="secondary" id="backToAnonBtn" style="padding: 6px 12px; font-size: 12px;">Volver</button>
+                </div>
+              `;
+              
+              document.getElementById('doLoginBtn').addEventListener('click', async () => {
+                const email = document.getElementById('loginEmail').value.trim();
+                const pass = document.getElementById('loginPass').value;
+                try {
+                  await signInWithEmailAndPassword(auth, email, pass);
+                  showToast("Sesión iniciada correctamente", "success");
+                } catch (e) { showToast("Credenciales inválidas", "error"); }
+              });
+
+              document.getElementById('backToAnonBtn').addEventListener('click', () => signInAnonymously(auth));
+            }, 100);
+          });
+        });
+
+        // listener para re-vincular el botón de engranaje flotante
+        document.getElementById('openSetupModalBtn').addEventListener('click', () => {
+          const localConfigRaw = localStorage.getItem(FIREBASE_CONFIG_KEY);
+          if (localConfigRaw) document.getElementById('firebaseConfigInput').value = localConfigRaw;
+          document.getElementById('firebaseSetupModal').classList.add('active');
+        });
+
+      } else {
+        // Usuario con Email permanente logueado
+        authContainer.innerHTML = `
+          <div class="auth-badge">
+            <span>👤 ${currentUser.email}</span>
+            <button class="danger" id="logoutBtn" style="background: none; border: none; padding: 0 4px; cursor: pointer; font-size: 11px; margin-left: 8px;">
+              Salir
+            </button>
+            <button class="secondary" id="openSetupModalBtn" style="background:none; border:none; padding:0 4px; cursor:pointer; margin-left:4px; font-size:11px;">⚙️</button>
+          </div>
+        `;
+
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+          showCustomModal("Cerrar sesión", "¿Quieres salir de tu cuenta?", true, async () => {
             if (configUnsubscribe) configUnsubscribe();
             if (tradesUnsubscribe) tradesUnsubscribe();
             await signOut(auth);
             showToast("Sesión cerrada", "warning");
-          }
-        );
-      });
+          });
+        });
+
+        document.getElementById('openSetupModalBtn').addEventListener('click', () => {
+          const localConfigRaw = localStorage.getItem(FIREBASE_CONFIG_KEY);
+          if (localConfigRaw) document.getElementById('firebaseConfigInput').value = localConfigRaw;
+          document.getElementById('firebaseSetupModal').classList.add('active');
+        });
+      }
     }
 
     // Logic for loading state from Cloud/Local fallback
