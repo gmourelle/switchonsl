@@ -238,13 +238,6 @@
       line-height: 1.45;
     }
 
-    .trade-form-wide .span-2,
-    .trade-form-wide .span-3,
-    .trade-form-wide .span-4,
-    .trade-form-wide .span-6,
-    .trade-form-wide .span-8,
-    .trade-form-wide .span-12 { grid-column: auto; }
-
     .accounts {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -519,7 +512,7 @@
       border: 1px solid var(--border);
       border-radius: var(--radius);
       padding: 24px;
-      width: min(480px, 100% - 32px);
+      width: min(520px, 100% - 32px);
       box-shadow: var(--shadow);
     }
     .custom-modal-title {
@@ -538,6 +531,31 @@
       display: flex;
       justify-content: flex-end;
       gap: 12px;
+    }
+
+    .modal-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 16px;
+      gap: 4px;
+    }
+    .modal-tab-btn {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      padding: 12px 6px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 13px;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s ease;
+      text-align: center;
+    }
+    .modal-tab-btn.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+      background: rgba(110,168,254,0.04);
     }
 
     @media (max-width: 980px) {
@@ -579,16 +597,70 @@
     </div>
   </div>
 
-  <!-- Firebase Configuration and Login Modal -->
+  <!-- Firebase & Login Multi-device Modal -->
   <div id="firebaseSetupModal" class="custom-modal-overlay">
-    <div class="custom-modal-box" style="width: min(550px, 100% - 32px);">
-      <div class="custom-modal-title">Configurar Sincronización Multi-Dispositivo</div>
+    <div class="custom-modal-box">
+      <div class="modal-tabs">
+        <button class="modal-tab-btn active" data-tab="auth" id="tabAuthBtn">👤 Mi Cuenta / Login</button>
+        <button class="modal-tab-btn" data-tab="config" id="tabConfigBtn">⚙️ Configurar Firebase</button>
+      </div>
+
       <div class="custom-modal-body">
         
-        <div id="stepProjectConfig" style="display: block;">
-          <h3 style="font-size:14px; margin-bottom:8px; color:var(--accent);">Paso 1: Credenciales Firebase</h3>
-          <p style="margin-bottom: 12px; font-size:13px;">Pega la configuración JSON de tu proyecto Firebase para conectar este navegador:</p>
-          <textarea id="firebaseConfigTextarea" style="width:100%; height:120px; font-family:monospace; font-size:12px; background:#081224; color:var(--text); border:1px solid var(--border); border-radius:12px; padding:10px; resize:vertical; outline:none; margin-bottom:12px;" placeholder='{
+        <!-- Tab 1: Email and Password Authentication -->
+        <div id="stepUserAuth" style="display: block;">
+          <!-- Case A: Firebase is not configured yet -->
+          <div id="authNeedConfig" style="display: none; text-align: center; padding: 12px 10px;">
+            <span style="font-size: 38px;">☁️</span>
+            <h3 style="margin: 10px 0 6px; color: var(--text);">Sincronización Inactiva</h3>
+            <p style="font-size: 13px; color: var(--muted); margin-bottom: 16px; line-height: 1.45;">
+              Para iniciar sesión y sincronizar tus operaciones desde cualquier dispositivo, primero debes proveer la configuración de tu proyecto en la pestaña <strong>Configurar Firebase</strong>.
+            </p>
+            <button class="primary" id="goToConfigBtn" style="font-size: 13px; padding: 10px 18px;">Ir a Configurar Firebase ➡️</button>
+          </div>
+
+          <!-- Case B: Firebase is configured, user can Authenticate -->
+          <div id="authFormArea" style="display: block;">
+            <h3 style="font-size:15px; margin-bottom:12px; color:var(--accent);">Sincroniza tus trades entre dispositivos</h3>
+            <p style="margin-bottom: 14px; font-size:13px; line-height: 1.45;">Ingresa tus datos para iniciar sesión o registrar una cuenta nueva. Tus balances e historial se descargarán al instante:</p>
+            
+            <div class="field" style="margin-bottom:12px;">
+              <label for="authEmail">Correo Electrónico</label>
+              <input type="email" id="authEmail" placeholder="ejemplo@correo.com" style="background: #081224;" />
+            </div>
+            <div class="field" style="margin-bottom:16px;">
+              <label for="authPassword">Contraseña</label>
+              <input type="password" id="authPassword" placeholder="••••••••" style="background: #081224;" />
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-bottom: 8px;">
+              <button class="primary" id="loginUserBtn" style="flex:1; font-size: 14px; min-height: 48px;">Iniciar Sesión</button>
+              <button class="secondary" id="registerUserBtn" style="flex:1; font-size: 14px; min-height: 48px; background: rgba(110,168,254,0.12); color:#9bc0ff;">Crear Cuenta</button>
+            </div>
+            <p style="font-size: 11px; text-align: center; color: var(--muted); margin-top: 10px;">
+              Asegúrate de que la autenticación <strong>Email/Password</strong> esté activa en la sección Authentication de tu Firebase Console.
+            </p>
+          </div>
+
+          <!-- Case C: Already logged in -->
+          <div id="authLoggedInArea" style="display: none; text-align: center; padding: 12px 10px;">
+            <span style="font-size: 38px;">🎉</span>
+            <h3 style="margin: 10px 0 6px; color: var(--green);">¡Sesión Sincronizada!</h3>
+            <p style="font-size: 13px; color: var(--muted); margin-bottom: 16px;">
+              Estás conectado como:<br><strong id="loggedInEmailLabel" style="color: var(--text);">correo@ejemplo.com</strong>
+            </p>
+            <p style="font-size: 12px; color: var(--muted); margin-bottom: 20px; line-height: 1.4;">
+              Cualquier cambio de balance o trade guardado se reflejará en tiempo real en todos tus navegadores abiertos.
+            </p>
+            <button class="danger" id="fbLogoutBtn" style="width: 100%; min-height: 46px;">Cerrar Sesión en esta PC</button>
+          </div>
+        </div>
+
+        <!-- Tab 2: Project credentials configuration -->
+        <div id="stepProjectConfig" style="display: none;">
+          <h3 style="font-size:15px; margin-bottom:8px; color:var(--accent);">Paso 1: Pegar Configuración de Firebase</h3>
+          <p style="margin-bottom: 12px; font-size:13px; line-height: 1.45;">Copia tu objeto JSON <span style="font-family: monospace; background: rgba(255,255,255,0.05); padding: 2px 4px; border-radius: 4px;">firebaseConfig</span> desde tu consola web de Firebase:</p>
+          <textarea id="firebaseConfigTextarea" style="width:100%; height:130px; font-family:monospace; font-size:12px; background:#081224; color:var(--text); border:1px solid var(--border); border-radius:12px; padding:10px; resize:none; outline:none; margin-bottom:12px;" placeholder='{
   "apiKey": "AIzaSy...",
   "authDomain": "tu-proyecto.firebaseapp.com",
   "projectId": "tu-proyecto",
@@ -596,35 +668,15 @@
   "messagingSenderId": "1234567890",
   "appId": "1:1234567890:web:abcdef..."
 }'></textarea>
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <p style="font-size:11px; color:var(--muted); max-width:65%;">Asegúrate de habilitar <strong>Email/Password</strong> en Auth de Firebase.</p>
-            <button class="primary" id="validateProjectBtn" style="padding: 8px 14px; font-size: 13px;">Siguiente Paso ➡️</button>
-          </div>
-        </div>
-
-        <div id="stepUserAuth" style="display: none;">
-          <h3 style="font-size:14px; margin-bottom:8px; color:var(--accent);">Paso 2: Acceso a tu Cuenta</h3>
-          <p style="margin-bottom: 12px; font-size:13px;">Inicia sesión o regístrate para sincronizar todos tus navegadores con el mismo historial:</p>
-          
-          <div class="field" style="margin-bottom:10px;">
-            <label for="authEmail">Correo Electrónico</label>
-            <input type="email" id="authEmail" placeholder="ejemplo@correo.com" />
-          </div>
-          <div class="field" style="margin-bottom:14px;">
-            <label for="authPassword">Contraseña</label>
-            <input type="password" id="authPassword" placeholder="••••••••" />
-          </div>
-
           <div style="display: flex; gap: 8px;">
-            <button class="primary" id="loginUserBtn" style="flex:1;">Iniciar Sesión</button>
-            <button class="secondary" id="registerUserBtn" style="flex:1; background: rgba(110,168,254,0.12); color:#9bc0ff;">Crear Cuenta</button>
+            <button class="secondary" id="clearConfigBtn" style="flex: 0.4; font-size: 13px; min-height: 44px;">Limpiar</button>
+            <button class="primary" id="validateProjectBtn" style="flex: 1; font-size: 13px; min-height: 44px;">Conectar Credenciales ➡️</button>
           </div>
-          <button class="secondary" id="backToConfigBtn" style="width:100%; margin-top:8px; font-size:12px; padding:6px;">⬅️ Cambiar Credenciales Firebase</button>
         </div>
 
       </div>
       <div class="custom-modal-actions">
-        <button class="secondary" onclick="document.getElementById('firebaseSetupModal').classList.remove('active')">Cerrar</button>
+        <button class="secondary" onclick="document.getElementById('firebaseSetupModal').classList.remove('active')">Cerrar Ventana</button>
       </div>
     </div>
   </div>
@@ -640,8 +692,7 @@
           <div style="display: flex; align-items: center; gap: 8px; margin-top: 10px; flex-wrap: wrap;">
             <span id="cloudStatus" style="font-size: 12px; font-weight: bold; padding: 4px 10px; border-radius: 999px; background: rgba(255,255,255,0.05); color: var(--muted);">Modo Local</span>
             <span id="currentUserEmail" style="font-size: 12px; color: var(--muted); display: none;"></span>
-            <button id="fbSetupBtn" class="secondary" style="padding: 4px 10px; font-size: 11px; border-radius: 6px; cursor: pointer; border: 1px solid var(--border); background: rgba(255,255,255,0.05); color: var(--text);">⚙️ Sincronizar Cloud</button>
-            <button id="fbLogoutBtn" class="danger" style="padding: 4px 10px; font-size: 11px; border-radius: 6px; cursor: pointer; display: none;">Cerrar Sesión</button>
+            <button id="fbSetupBtn" class="primary" style="padding: 6px 14px; font-size: 12px; border-radius: 8px; cursor: pointer; border: none; background: var(--accent); color: #081224; font-weight: 700;">👤 Iniciar Sesión / Sincronizar</button>
           </div>
         </div>
         <div class="actions">
@@ -658,6 +709,7 @@
       </div>
     </section>
 
+    <!-- Formulario de carga de trades -->
     <section class="card full-width trade-card">
       <div class="trade-header">
         <div class="trade-header-row">
@@ -736,12 +788,14 @@
       </form>
     </section>
 
+    <!-- Cuentas activas -->
     <section class="card full-width">
       <h2>Cuentas activas</h2>
       <p class="subtle" style="margin-top:6px; margin-bottom:16px;">Puedes editar balances iniciales, objetivo y drawdown. La cuenta actual queda marcada automáticamente.</p>
       <div class="accounts" id="accountsContainer"></div>
     </section>
 
+    <!-- Grilla Inferior (Historial + Configuración) -->
     <div class="grid">
       <section class="card">
         <h2>Historial de operaciones</h2>
@@ -908,7 +962,6 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     }
 
-    // Writes configurations and balance state to cloud Firestore
     async function saveStateToCloud() {
       if (!isCloudActive || !auth || !auth.currentUser) return;
       try {
@@ -1232,7 +1285,7 @@
       });
     }
 
-    // --- FIREBASE SYNC IMPLEMENTATION (E-mail / Password) ---
+    // --- STREAMING_CHUNK: Sistema de inicialización y sincronización de Firebase Auth y Firestore... ---
 
     async function initFirebase(config) {
       try {
@@ -1247,13 +1300,18 @@
         onAuthStateChanged(auth, (user) => {
           if (user) {
             isCloudActive = true;
+            document.getElementById('cloudStatus').textContent = "☁️ Sincronizado";
+            document.getElementById('cloudStatus').style.background = "rgba(34,197,94,0.15)";
+            document.getElementById('cloudStatus').style.color = "var(--green)";
+            
             document.getElementById('currentUserEmail').textContent = `(${user.email})`;
             document.getElementById('currentUserEmail').style.display = "inline-block";
-            document.getElementById('fbLogoutBtn').style.display = "inline-block";
-            
-            // Ocultamos formulario de autenticación si ya inició sesión
-            document.getElementById('stepProjectConfig').style.display = "none";
-            document.getElementById('stepUserAuth').style.display = "none";
+            document.getElementById('fbSetupBtn').textContent = "👤 Ajustes de Cuenta";
+
+            // Update user modal states
+            document.getElementById('authFormArea').style.display = "none";
+            document.getElementById('authLoggedInArea').style.display = "block";
+            document.getElementById('loggedInEmailLabel').textContent = user.email;
             
             setupRealtimeSync(user.uid);
           } else {
@@ -1268,14 +1326,14 @@
     }
 
     function setupRealtimeSync(userId) {
-      // RULE 1 - Strict paths compliant
+      // RULE 1 - Paths estrictos compatibles con reglas de seguridad
       const configDocRef = doc(db, 'artifacts', appId, 'users', userId, 'config', 'state');
       const tradesColRef = collection(db, 'artifacts', appId, 'users', userId, 'trades');
 
       if (configUnsubscribe) configUnsubscribe();
       if (tradesUnsubscribe) tradesUnsubscribe();
 
-      // Config and Account sync
+      // Sincronización de configuraciones y estado de balances
       configUnsubscribe = onSnapshot(configDocRef, (snap) => {
         if (snap.exists()) {
           const cloudData = snap.data();
@@ -1286,16 +1344,13 @@
         } else {
           saveStateToCloud();
         }
-        document.getElementById('cloudStatus').textContent = "☁️ Sincronizado";
-        document.getElementById('cloudStatus').style.background = "rgba(34,197,94,0.15)";
-        document.getElementById('cloudStatus').style.color = "var(--green)";
       }, (err) => {
         console.error("Config Sync Error:", err);
-        showNotification("Fallo de permisos en la nube. Revisa las reglas de Firestore o inicia sesión.", "error");
+        showNotification("Fallo de permisos en la nube. Revisa las reglas de Firestore o tu login.", "error");
         fallbackToLocal();
       });
 
-      // Trades sync (RULE 2 - simple query, sort locally in memory)
+      // Sincronización en tiempo real de operaciones registradas (RULE 2 - Query simple + ordenamiento local)
       tradesUnsubscribe = onSnapshot(tradesColRef, (snap) => {
         const cloudTrades = [];
         snap.forEach((doc) => {
@@ -1317,18 +1372,16 @@
       document.getElementById('cloudStatus').style.background = "rgba(255,255,255,0.05)";
       document.getElementById('cloudStatus').style.color = "var(--muted)";
       document.getElementById('currentUserEmail').style.display = "none";
-      document.getElementById('fbLogoutBtn').style.display = "none";
-      
-      // Mostrar pantalla inicial en modal
-      document.getElementById('stepProjectConfig').style.display = "block";
-      document.getElementById('stepUserAuth').style.display = "none";
+      document.getElementById('fbSetupBtn').textContent = "👤 Iniciar Sesión / Sincronizar";
+
+      // Reset modal user state
+      document.getElementById('authFormArea').style.display = "block";
+      document.getElementById('authLoggedInArea').style.display = "none";
 
       if (configUnsubscribe) configUnsubscribe();
       if (tradesUnsubscribe) tradesUnsubscribe();
       render();
     }
-
-    // --- ACTIONS AND FORMS LOGIC ---
 
     tradeForm.addEventListener('submit', async e => {
       e.preventDefault();
@@ -1509,16 +1562,49 @@
       });
     });
 
-    // Controladores del Modal de Sincronización
+    // Modal tabs controller
+    function switchTab(tabName) {
+      document.querySelectorAll('.modal-tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tab === tabName);
+      });
+      if (tabName === 'auth') {
+        document.getElementById('stepUserAuth').style.display = "block";
+        document.getElementById('stepProjectConfig').style.display = "none";
+      } else {
+        document.getElementById('stepUserAuth').style.display = "none";
+        document.getElementById('stepProjectConfig').style.display = "block";
+      }
+    }
+
+    document.getElementById('tabAuthBtn').addEventListener('click', () => switchTab('auth'));
+    document.getElementById('tabConfigBtn').addEventListener('click', () => switchTab('config'));
+    document.getElementById('goToConfigBtn').addEventListener('click', () => switchTab('config'));
+
+    // Abre el modal evaluando si Firebase está configurado para mostrar los campos adecuados
     document.getElementById('fbSetupBtn').addEventListener('click', () => {
       const localConfigRaw = localStorage.getItem(FIREBASE_CONFIG_KEY);
+      
       if (localConfigRaw) {
         document.getElementById('firebaseConfigTextarea').value = localConfigRaw;
+        document.getElementById('authNeedConfig').style.display = "none";
+        if (auth && auth.currentUser) {
+          document.getElementById('authFormArea').style.display = "none";
+          document.getElementById('authLoggedInArea').style.display = "block";
+          document.getElementById('loggedInEmailLabel').textContent = auth.currentUser.email;
+        } else {
+          document.getElementById('authFormArea').style.display = "block";
+          document.getElementById('authLoggedInArea').style.display = "none";
+        }
+      } else {
+        document.getElementById('authNeedConfig').style.display = "block";
+        document.getElementById('authFormArea').style.display = "none";
+        document.getElementById('authLoggedInArea').style.display = "none";
       }
+      
       document.getElementById('firebaseSetupModal').classList.add('active');
     });
 
-    // Validar Credenciales JSON y pasar al paso del Usuario
+    // Valida y conecta la configuración JSON de Firebase
     document.getElementById('validateProjectBtn').addEventListener('click', () => {
       const rawInput = document.getElementById('firebaseConfigTextarea').value.trim();
       if (!rawInput) {
@@ -1535,22 +1621,21 @@
         
         localStorage.setItem(FIREBASE_CONFIG_KEY, JSON.stringify(parsed));
         
-        // Inicializamos Firebase con las credenciales
+        // Inicializamos Firebase
         initFirebase(parsed);
 
-        // Mostramos el siguiente paso
-        document.getElementById('stepProjectConfig').style.display = "none";
-        document.getElementById('stepUserAuth').style.display = "block";
-        showNotification("Conectado con Firebase. Ahora inicia sesión.");
+        // Actualizamos UI del modal y mostramos la pestaña de Login automáticamente
+        document.getElementById('authNeedConfig').style.display = "none";
+        document.getElementById('authFormArea').style.display = "block";
+        switchTab('auth');
+        showNotification("Credenciales conectadas. ¡Ya puedes iniciar sesión!");
       } catch {
-        customAlert("Error", "El JSON provisto no es válido. Asegúrate de copiar las propiedades de tu objeto firebaseConfig de manera íntegra.");
+        customAlert("Error de JSON", "El JSON provisto no es válido. Asegúrate de copiar las propiedades de tu objeto firebaseConfig de manera íntegra.");
       }
     });
 
-    // Volver al paso 1
-    document.getElementById('backToConfigBtn').addEventListener('click', () => {
-      document.getElementById('stepProjectConfig').style.display = "block";
-      document.getElementById('stepUserAuth').style.display = "none";
+    document.getElementById('clearConfigBtn').addEventListener('click', () => {
+      document.getElementById('firebaseConfigTextarea').value = '';
     });
 
     // Iniciar Sesión (Email & Password)
@@ -1596,7 +1681,7 @@
         document.getElementById('firebaseSetupModal').classList.remove('active');
       } catch (err) {
         console.error("Register Error:", err);
-        customAlert("Error de Registro", "No se pudo crear la cuenta. Es posible que el correo ya esté en uso o sea inválido.");
+        customAlert("Error de Registro", "No se pudo crear la cuenta. Es posible que el correo ya esté en uso.");
       }
     });
 
@@ -1605,13 +1690,14 @@
       if (auth) {
         await signOut(auth);
         showNotification("Sesión cerrada. Regresando al Modo Local.", "warning");
+        document.getElementById('firebaseSetupModal').classList.remove('active');
       }
     });
 
     // Start Page
     tradeDate.value = getNowForInput();
 
-    // Check if there is an active Firebase configuration saved
+    // Revisa si hay una sesión activa de Firebase preconfigurada
     const savedConfig = localStorage.getItem(FIREBASE_CONFIG_KEY);
     if (savedConfig) {
       try {
