@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Switch On SL Tracker - Cloud Sync</title>
+  <title>Switch On SL Tracker</title>
   <style>
     :root {
       --bg: #0b1020;
@@ -27,7 +27,6 @@
       font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background: linear-gradient(180deg, #0b1020 0%, #0e1428 100%);
       color: var(--text);
-      min-height: 100vh;
     }
 
     .container {
@@ -36,65 +35,6 @@
     }
 
     h1, h2, h3, p { margin: 0; }
-
-    /* Header & Cloud Status */
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 16px 24px;
-      background: rgba(19, 26, 46, 0.85);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-
-    .logo-area {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .logo-area h1 {
-      font-size: 20px;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-      background: linear-gradient(90deg, #6ea8fe, #a8b3cf);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .cloud-status {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 13px;
-      font-weight: 600;
-      padding: 6px 12px;
-      background: rgba(255,255,255,0.03);
-      border: 1px solid var(--border);
-      border-radius: 999px;
-    }
-
-    .status-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--muted);
-      display: inline-block;
-    }
-
-    .status-dot.online { background: var(--green); box-shadow: 0 0 8px var(--green); }
-    .status-dot.syncing { background: var(--yellow); box-shadow: 0 0 8px var(--yellow); animation: pulse 1.5s infinite; }
-    .status-dot.offline { background: var(--red); box-shadow: 0 0 8px var(--red); }
-
-    @keyframes pulse {
-      0% { opacity: 0.4; }
-      50% { opacity: 1; }
-      100% { opacity: 0.4; }
-    }
 
     .hero, .card {
       background: rgba(19, 26, 46, 0.95);
@@ -108,7 +48,6 @@
       padding: 24px;
       display: grid;
       gap: 16px;
-      margin-top: 24px;
       margin-bottom: 20px;
     }
 
@@ -137,6 +76,11 @@
     .grid {
       display: grid;
       grid-template-columns: 1.15fr 0.85fr;
+      gap: 20px;
+    }
+
+    .stack {
+      display: grid;
       gap: 20px;
     }
 
@@ -294,6 +238,13 @@
       line-height: 1.45;
     }
 
+    .trade-form-wide .span-2,
+    .trade-form-wide .span-3,
+    .trade-form-wide .span-4,
+    .trade-form-wide .span-6,
+    .trade-form-wide .span-8,
+    .trade-form-wide .span-12 { grid-column: auto; }
+
     .accounts {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -434,12 +385,6 @@
       border-radius: 12px;
       padding: 12px 13px;
       outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
-    }
-
-    input:focus, select:focus, textarea:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(110,168,254,0.15);
     }
 
     textarea { min-height: 92px; resize: vertical; }
@@ -458,7 +403,6 @@
       padding: 12px;
       cursor: pointer;
       font-weight: 700;
-      transition: all 0.2s ease;
     }
 
     .result-btn.active[data-result="win"] { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.35); }
@@ -477,22 +421,11 @@
       padding: 12px 16px;
       cursor: pointer;
       font-weight: 700;
-      transition: transform 0.1s, opacity 0.2s;
     }
-
-    button:active { transform: scale(0.98); }
 
     button.primary { background: var(--accent); color: #081224; }
-    button.primary:hover { background: var(--accent-hover); }
     button.secondary { background: rgba(255,255,255,0.08); color: var(--text); }
-    button.secondary:hover { background: rgba(255,255,255,0.12); }
     button.danger { background: rgba(239,68,68,0.16); color: #ffb0b0; border: 1px solid rgba(239,68,68,0.25); }
-    button.danger:hover { background: rgba(239,68,68,0.25); }
-
-    .table-container {
-      width: 100%;
-      overflow-x: auto;
-    }
 
     table {
       width: 100%;
@@ -547,135 +480,66 @@
     .summary-box span { color: var(--muted); font-size: 12px; }
 
     .empty {
-      padding: 24px;
+      padding: 14px;
       color: var(--muted);
       border: 1px dashed var(--border);
       border-radius: 12px;
       margin-top: 10px;
-      text-align: center;
     }
 
-    /* Modal Styles */
-    .modal-backdrop {
+    /* Custom Toast Notifications Container */
+    .notification-container {
       position: fixed;
-      inset: 0;
+      bottom: 20px;
+      right: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 3000;
+    }
+
+    /* Custom Modal styles */
+    .custom-modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(8, 12, 24, 0.85);
       backdrop-filter: blur(8px);
+      z-index: 2000;
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 1000;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.25s ease;
-      padding: 16px;
+      transition: opacity 0.2s ease;
     }
-
-    .modal-backdrop.active {
+    .custom-modal-overlay.active {
       opacity: 1;
       pointer-events: all;
     }
-
-    .modal-content {
+    .custom-modal-box {
       background: var(--panel);
       border: 1px solid var(--border);
       border-radius: var(--radius);
+      padding: 24px;
+      width: min(480px, 100% - 32px);
       box-shadow: var(--shadow);
-      width: 100%;
-      max-width: 500px;
-      padding: 28px;
-      transform: scale(0.92);
-      transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-      display: grid;
-      gap: 20px;
     }
-
-    .modal-backdrop.active .modal-content {
-      transform: scale(1);
-    }
-
-    .modal-title {
-      font-size: 22px;
-      font-weight: 800;
+    .custom-modal-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 12px;
       color: var(--text);
     }
-
-    .modal-body {
-      color: var(--muted);
+    .custom-modal-body {
       font-size: 14px;
-      line-height: 1.6;
+      color: var(--muted);
+      line-height: 1.5;
+      margin-bottom: 20px;
     }
-
-    .modal-footer {
+    .custom-modal-actions {
       display: flex;
       justify-content: flex-end;
       gap: 12px;
-    }
-
-    /* Floating Toasts */
-    .toast-container {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      display: grid;
-      gap: 10px;
-      z-index: 1100;
-      max-width: 380px;
-      width: calc(100% - 48px);
-    }
-
-    .toast {
-      background: var(--panel-2);
-      border: 1px solid var(--border);
-      padding: 14px 20px;
-      border-radius: 12px;
-      box-shadow: var(--shadow);
-      color: var(--text);
-      font-size: 14px;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      transform: translateY(20px);
-      opacity: 0;
-      animation: slideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-    }
-
-    .toast.success { border-left: 4px solid var(--green); }
-    .toast.error { border-left: 4px solid var(--red); }
-    .toast.warning { border-left: 4px solid var(--yellow); }
-
-    @keyframes slideIn {
-      to {
-        transform: translateY(0);
-        opacity: 1;
-      }
-    }
-
-    /* Tabs inside account modal */
-    .auth-tabs {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      background: rgba(0,0,0,0.2);
-      border-radius: 10px;
-      padding: 4px;
-    }
-
-    .auth-tab-btn {
-      background: none;
-      border: none;
-      color: var(--muted);
-      padding: 8px;
-      cursor: pointer;
-      font-weight: 700;
-      font-size: 13px;
-      border-radius: 8px;
-      transition: all 0.2s;
-    }
-
-    .auth-tab-btn.active {
-      background: var(--panel-2);
-      color: var(--text);
     }
 
     @media (max-width: 980px) {
@@ -686,7 +550,6 @@
     }
 
     @media (max-width: 640px) {
-      header { flex-direction: column; gap: 12px; align-items: flex-start; }
       .form-grid, .summary-grid { grid-template-columns: 1fr; }
       .trade-form-wide .result-buttons { grid-template-columns: 1fr; }
       .container { width: min(100% - 20px, 1200px); }
@@ -695,122 +558,66 @@
   </style>
 </head>
 <body>
-
-  <!-- Custom Alert/Confirm Modal -->
-  <div id="customModal" class="modal-backdrop">
-    <div class="modal-content">
-      <div id="customModalTitle" class="modal-title">Título</div>
-      <div id="customModalBody" class="modal-body">Mensaje...</div>
-      <div class="modal-footer">
-        <button id="customModalCancelBtn" class="secondary">Cancelar</button>
-        <button id="customModalConfirmBtn" class="primary">Aceptar</button>
+  <!-- Custom Alert Modal -->
+  <div id="customAlertModal" class="custom-modal-overlay">
+    <div class="custom-modal-box">
+      <div id="customAlertTitle" class="custom-modal-title">Alerta</div>
+      <div id="customAlertBody" class="custom-modal-body">Mensaje de alerta...</div>
+      <div class="custom-modal-actions">
+        <button class="primary" onclick="document.getElementById('customAlertModal').classList.remove('active')">Entendido</button>
       </div>
     </div>
   </div>
 
-  <!-- Realtime Notification Container -->
-  <div id="toastContainer" class="toast-container"></div>
+  <!-- Custom Confirm Modal -->
+  <div id="customConfirmModal" class="custom-modal-overlay">
+    <div class="custom-modal-box">
+      <div id="customConfirmTitle" class="custom-modal-title">Confirmar Acción</div>
+      <div id="customConfirmBody" class="custom-modal-body">¿Estás seguro?</div>
+      <div class="custom-modal-actions">
+        <button class="secondary" onclick="document.getElementById('customConfirmModal').classList.remove('active')">Cancelar</button>
+        <button class="primary" id="customConfirmBtn">Confirmar</button>
+      </div>
+    </div>
+  </div>
 
-  <!-- Firebase Connection Setup Modal -->
-  <div id="firebaseSetupModal" class="modal-backdrop">
-    <div class="modal-content" style="max-width: 550px;">
-      <div class="modal-title">Configuración Cloud (Firebase)</div>
-      <div class="modal-body">
-        <p style="margin-bottom: 12px;">Para guardar tus datos en tiempo real y acceder a ellos desde cualquier navegador o teléfono móvil, pega tu objeto `firebaseConfig` aquí:</p>
-        <div style="display: grid; gap: 12px; margin-top: 10px;">
-          <div class="field">
-            <label>Código JSON de configuración</label>
-            <textarea id="firebaseConfigInput" style="font-family: monospace; font-size: 12px; min-height: 140px;" placeholder='{
+  <!-- Firebase Configuration Modal -->
+  <div id="firebaseSetupModal" class="custom-modal-overlay">
+    <div class="custom-modal-box" style="width: min(550px, 100% - 32px);">
+      <div class="custom-modal-title">Configurar Sincronización Cloud</div>
+      <div class="custom-modal-body">
+        <p style="margin-bottom: 12px;">Pega tu configuración de Firebase (objeto JSON de tu consola de Firebase) para sincronizar tus datos en tiempo real:</p>
+        <textarea id="firebaseConfigTextarea" style="width:100%; height:160px; font-family:monospace; font-size:12px; background:#081224; color:var(--text); border:1px solid var(--border); border-radius:12px; padding:10px; resize:vertical; outline:none;" placeholder='{
   "apiKey": "AIzaSy...",
-  "authDomain": "tu-app.firebaseapp.com",
-  "projectId": "tu-app",
-  "storageBucket": "tu-app.firebasestorage.app",
-  "messagingSenderId": "301060369311",
-  "appId": "1:3010..."
+  "authDomain": "tu-proyecto.firebaseapp.com",
+  "projectId": "tu-proyecto",
+  "storageBucket": "tu-proyecto.appspot.com",
+  "messagingSenderId": "1234567890",
+  "appId": "1:1234567890:web:abcdef..."
 }'></textarea>
-          </div>
-          <p style="font-size: 12px; color: var(--muted); line-height: 1.4;">
-            <strong>Importante:</strong> Asegúrate de pegar un formato JSON puro (como el ejemplo de arriba), con todas las propiedades encerradas en comillas dobles y sin el punto y coma final.
-          </p>
-        </div>
+        <p style="font-size:11px; margin-top:8px; color:var(--muted); line-height:1.4;">
+          <strong>Importante:</strong> Recuerda habilitar <strong>Anonymous Sign-in</strong> en la pestaña Authentication de tu consola Firebase, y crear tu base de datos de <strong>Cloud Firestore</strong> antes de conectar.
+        </p>
       </div>
-      <div class="modal-footer">
-        <button id="closeSetupBtn" class="secondary">Cancelar</button>
-        <button id="saveSetupBtn" class="primary">Guardar y Conectar</button>
+      <div class="custom-modal-actions">
+        <button class="secondary" onclick="document.getElementById('firebaseSetupModal').classList.remove('active')">Cancelar</button>
+        <button class="primary" id="saveFirebaseBtn">Conectar Firebase</button>
       </div>
     </div>
   </div>
 
-  <!-- Auth/Account Interactive Modal -->
-  <div id="accountModal" class="modal-backdrop">
-    <div class="modal-content" style="max-width: 440px;">
-      <div class="modal-title" id="accountModalTitle">Sincronizar Cuenta</div>
-      
-      <!-- Panel de Opciones para Usuario Anónimo -->
-      <div id="anonPanel" style="display: none; grid-gap: 16px; gap: 16px;">
-        <p class="subtle" style="font-size: 13px;">Estás en una sesión temporal. Vincula un correo electrónico para que tus datos se guarden para siempre y puedas abrirlos en cualquier lugar.</p>
-        
-        <div class="auth-tabs">
-          <button id="tabRegister" class="auth-tab-btn active">Crear & Vincular Cuenta</button>
-          <button id="tabLogin" class="auth-tab-btn">Ya tengo una cuenta</button>
-        </div>
-
-        <div style="display: grid; gap: 12px;">
-          <div class="field">
-            <label>Correo Electrónico</label>
-            <input type="email" id="modalEmail" placeholder="tu@ejemplo.com">
-          </div>
-          <div class="field">
-            <label>Contraseña</label>
-            <input type="password" id="modalPass" placeholder="Mínimo 6 caracteres">
-          </div>
-        </div>
-
-        <button id="authSubmitBtn" class="primary" style="width: 100%; padding: 12px;">Sincronizar y Guardar Datos</button>
-      </div>
-
-      <!-- Panel de Opciones para Usuario con Email permanente -->
-      <div id="userPanel" style="display: none; grid-gap: 16px; gap: 16px;">
-        <div style="text-align: center; padding: 16px 0;">
-          <div style="font-size: 40px; margin-bottom: 8px;">👤</div>
-          <strong id="userDisplayEmail" style="word-break: break-all; font-size: 16px;">email@usuario.com</strong>
-          <p class="subtle" style="font-size: 13px; margin-top: 6px;">Tus datos se encuentran seguros y sincronizados en la nube.</p>
-        </div>
-        <button id="doLogoutBtn" class="danger" style="width: 100%; padding: 12px;">Cerrar Sesión</button>
-      </div>
-
-      <div class="modal-footer">
-        <button id="closeAccountModalBtn" class="secondary" style="width: 100%;">Cerrar Ventana</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Header -->
-  <header>
-    <div class="logo-area">
-      <h1>Switch On SL Tracker</h1>
-      <div class="cloud-status">
-        <span id="statusDot" class="status-dot"></span>
-        <span id="statusText">Modo Local</span>
-      </div>
-    </div>
-    <div class="actions" style="align-items: center;">
-      <!-- Interactive Account Controller -->
-      <div id="headerAuthBtnContainer">
-        <button class="secondary" id="openAccountBtn" style="padding: 8px 14px; font-size: 13px; border-color: rgba(110,168,254,0.3); color: #b9d3ff;">
-          👤 Cuentas Cloud
-        </button>
-      </div>
-      <button class="secondary" id="openSetupModalBtn" style="padding: 8px 12px; font-size: 13px;">⚙️ Conexión</button>
-    </div>
-  </header>
+  <div id="notificationContainer" class="notification-container"></div>
 
   <div class="container">
     <section class="hero">
       <div class="hero-top">
         <div>
-          <h1>Control de Rotación Stop Loss</h1>
-          <p class="subtle">Registra cada operación. Tus datos se guardan de forma segura en la nube y se sincronizan entre todos tus dispositivos.</p>
+          <h1>Switch On SL Tracker</h1>
+          <p class="subtle">Registra cada operación y deja que la app te diga cuál es la próxima cuenta según la lógica de rotación por Stop Loss.</p>
+          <div style="display: flex; align-items: center; gap: 8px; margin-top: 10px;">
+            <span id="cloudStatus" style="font-size: 12px; font-weight: bold; padding: 4px 10px; border-radius: 999px; background: rgba(255,255,255,0.05); color: var(--muted);">Modo Local</span>
+            <button id="fbSetupBtn" class="secondary" style="padding: 4px 10px; font-size: 11px; border-radius: 6px; cursor: pointer; border: 1px solid var(--border); background: rgba(255,255,255,0.05); color: var(--text);">⚙️ Sincronizar Cloud</button>
+          </div>
         </div>
         <div class="actions">
           <button class="secondary" id="exportBtn">Exportar JSON</button>
@@ -821,12 +628,11 @@
       </div>
       <div class="next-account">
         <span class="subtle">Próxima cuenta a operar</span>
-        <strong id="nextAccountLabel">-</strong>
-        <span id="nextAccountReason" class="subtle">Sincronizando con base de datos...</span>
+        <strong id="nextAccountLabel">A</strong>
+        <span id="nextAccountReason" class="subtle">Al inicio del ciclo la cuenta sugerida es A.</span>
       </div>
     </section>
 
-    <!-- Form Container -->
     <section class="card full-width trade-card">
       <div class="trade-header">
         <div class="trade-header-row">
@@ -838,7 +644,6 @@
       </div>
 
       <form id="tradeForm" class="trade-form-wide">
-        <!-- Step 1 -->
         <section class="trade-section">
           <div class="trade-section-title"><span class="step-badge">1</span> Datos del trade</div>
           <div class="trade-fields one-col">
@@ -853,7 +658,6 @@
           </div>
         </section>
 
-        <!-- Step 2 -->
         <section class="trade-section outcome-panel">
           <div class="trade-section-title"><span class="step-badge">2</span> Resultado y riesgo</div>
           <div class="field">
@@ -887,7 +691,6 @@
           </div>
         </section>
 
-        <!-- Step 3 -->
         <section class="trade-section details-section">
           <div class="trade-section-title"><span class="step-badge">3</span> Detalles</div>
           <div class="trade-fields one-col">
@@ -901,26 +704,24 @@
             </div>
           </div>
           <div class="save-panel">
-            <button class="primary" type="submit" id="submitBtn">Guardar operación</button>
-            <div class="keyboard-hint">Luego de guardar, la app actualiza el balance y te marca la próxima cuenta automáticamente en la nube.</div>
+            <button class="primary" type="submit">Guardar operación</button>
+            <div class="keyboard-hint">Luego de guardar, la app actualiza el balance y te marca la próxima cuenta automáticamente.</div>
           </div>
         </section>
       </form>
     </section>
 
-    <!-- Accounts Grid -->
     <section class="card full-width">
       <h2>Cuentas activas</h2>
       <p class="subtle" style="margin-top:6px; margin-bottom:16px;">Puedes editar balances iniciales, objetivo y drawdown. La cuenta actual queda marcada automáticamente.</p>
       <div class="accounts" id="accountsContainer"></div>
     </section>
 
-    <!-- Bottom Panels -->
     <div class="grid">
       <section class="card">
         <h2>Historial de operaciones</h2>
         <p class="subtle" style="margin-top:6px;">La cuenta siguiente se calcula con cada registro: win = misma cuenta, loss = rota, breakeven = configurable.</p>
-        <div class="table-container" id="historyContainer"></div>
+        <div id="historyContainer"></div>
       </section>
 
       <section class="card">
@@ -962,13 +763,9 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { 
       getAuth, 
-      signInWithCustomToken, 
       signInAnonymously, 
-      onAuthStateChanged, 
-      signOut, 
-      linkWithCredential,
-      EmailAuthProvider,
-      signInWithEmailAndPassword 
+      signInWithCustomToken, 
+      onAuthStateChanged 
     } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { 
       getFirestore, 
@@ -997,22 +794,18 @@
       trades: []
     };
 
-    // App core state
-    let state = structuredClone(defaultState);
+    let state = loadState();
     let selectedResult = 'win';
-    let isCloudActive = false;
+
+    // Firebase variables
     let firebaseApp = null;
-    let db = null;
     let auth = null;
-    let currentUser = null;
+    let db = null;
+    let isCloudActive = false;
     let configUnsubscribe = null;
     let tradesUnsubscribe = null;
-    let currentAuthTab = 'register'; // register o login
-
-    // Globals injected by sandbox environment if available
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'switch-on-sl-tracker';
 
-    // DOM Elements
     const accountsContainer = document.getElementById('accountsContainer');
     const historyContainer = document.getElementById('historyContainer');
     const tradeForm = document.getElementById('tradeForm');
@@ -1026,85 +819,51 @@
     const pnlPreview = document.getElementById('pnlPreview');
     const defaultRisk = document.getElementById('defaultRisk');
     const breakEvenBehavior = document.getElementById('breakEvenBehavior');
-    const statusDot = document.getElementById('statusDot');
-    const statusText = document.getElementById('statusText');
 
-    // UI Auth Handles
-    const openAccountBtn = document.getElementById('openAccountBtn');
-    const accountModal = document.getElementById('accountModal');
-    const closeAccountModalBtn = document.getElementById('closeAccountModalBtn');
-    const anonPanel = document.getElementById('anonPanel');
-    const userPanel = document.getElementById('userPanel');
-    const tabRegister = document.getElementById('tabRegister');
-    const tabLogin = document.getElementById('tabLogin');
-    const modalEmail = document.getElementById('modalEmail');
-    const modalPass = document.getElementById('modalPass');
-    const authSubmitBtn = document.getElementById('authSubmitBtn');
-    const doLogoutBtn = document.getElementById('doLogoutBtn');
-    const userDisplayEmail = document.getElementById('userDisplayEmail');
-
-    // Custom Modal System (eliminates blocking alert/confirms)
-    function showCustomModal(title, message, showCancel, onConfirm) {
-      const modal = document.getElementById('customModal');
-      document.getElementById('customModalTitle').textContent = title;
-      document.getElementById('customModalBody').textContent = message;
-      
-      const cancelBtn = document.getElementById('customModalCancelBtn');
-      const confirmBtn = document.getElementById('customModalConfirmBtn');
-
-      cancelBtn.style.display = showCancel ? 'inline-block' : 'none';
-      modal.classList.add('active');
-
-      const cleanup = () => {
-        modal.classList.remove('active');
-        confirmBtn.onclick = null;
-        cancelBtn.onclick = null;
-      };
-
-      confirmBtn.onclick = () => {
-        cleanup();
-        if (onConfirm) onConfirm();
-      };
-      
-      cancelBtn.onclick = () => {
-        cleanup();
-      };
-    }
-
-    // Floating Notification Toasts
-    function showToast(message, type = 'success') {
-      const container = document.getElementById('toastContainer');
+    // UI Toast System
+    function showNotification(message, type = 'success') {
+      const container = document.getElementById('notificationContainer');
       const toast = document.createElement('div');
-      toast.className = `toast ${type}`;
-      toast.innerHTML = `
-        <span style="font-size: 16px;">${type === 'success' ? '✅' : type === 'error' ? '❌' : '⚠️'}</span>
-        <span>${message}</span>
-      `;
+      toast.style.background = type === 'success' ? 'rgba(34,197,94,0.15)' : type === 'error' ? 'rgba(239,68,68,0.15)' : 'rgba(245,158,11,0.15)';
+      toast.style.border = `1px solid ${type === 'success' ? 'rgba(34,197,94,0.3)' : type === 'error' ? 'rgba(239,68,68,0.3)' : 'rgba(245,158,11,0.3)'}`;
+      toast.style.color = type === 'success' ? '#8df0b3' : type === 'error' ? '#ffb0b0' : '#ffd48a';
+      toast.style.padding = '12px 20px';
+      toast.style.borderRadius = '12px';
+      toast.style.fontSize = '14px';
+      toast.style.fontWeight = 'bold';
+      toast.style.boxShadow = 'var(--shadow)';
+      toast.style.display = 'flex';
+      toast.style.alignItems = 'center';
+      toast.style.gap = '8px';
+      toast.style.transition = 'opacity 0.3s ease';
+      toast.innerHTML = `<span>${type === 'success' ? '✅' : type === 'error' ? '❌' : '⚠️'}</span><span>${message}</span>`;
       container.appendChild(toast);
-
       setTimeout(() => {
-        toast.style.animation = 'slideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) reverse forwards';
+        toast.style.opacity = '0';
         setTimeout(() => toast.remove(), 300);
       }, 3500);
     }
 
-    // Dynamic Connection Status Indicators
-    function updateConnectionStatus(status) {
-      statusDot.className = 'status-dot';
-      if (status === 'online') {
-        statusDot.classList.add('online');
-        statusText.textContent = 'Nube Activa';
-      } else if (status === 'syncing') {
-        statusDot.classList.add('syncing');
-        statusText.textContent = 'Buscando datos...';
-      } else {
-        statusDot.classList.add('offline');
-        statusText.textContent = 'Modo Local';
-      }
+    // Modal Alert / Confirm System
+    function customAlert(title, message) {
+      const overlay = document.getElementById('customAlertModal');
+      document.getElementById('customAlertTitle').textContent = title;
+      document.getElementById('customAlertBody').textContent = message;
+      overlay.classList.add('active');
     }
 
-    // Local Storage Loading Fallback
-    function loadLocalFallback() {
+    function customConfirm(title, message, onConfirm) {
+      const overlay = document.getElementById('customConfirmModal');
+      document.getElementById('customConfirmTitle').textContent = title;
+      document.getElementById('customConfirmBody').textContent = message;
+      overlay.classList.add('active');
+      document.getElementById('customConfirmBtn').onclick = () => {
+        overlay.classList.remove('active');
+        onConfirm();
+      };
+    }
+
+    function loadState() {
       try {
         const raw = localStorage.getItem(STORAGE_KEY);
         if (!raw) return structuredClone(defaultState);
@@ -1119,218 +878,26 @@
       }
     }
 
-    function saveLocalState() {
-      if (!isCloudActive) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      }
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     }
 
-    // Auth state renderer inside top navigation & Modals
-    function updateAuthUI() {
-      if (!isCloudActive) {
-        openAccountBtn.style.display = 'none';
-        return;
-      }
-      openAccountBtn.style.display = 'inline-block';
-
-      if (!currentUser) {
-        openAccountBtn.textContent = '👤 Conectando...';
-        return;
-      }
-
-      if (currentUser.isAnonymous) {
-        openAccountBtn.textContent = '☁️ Sesión Temporal (Vincular)';
-        openAccountBtn.style.color = '#ffd48a';
-        openAccountBtn.style.borderColor = 'rgba(245,158,11,0.3)';
-      } else {
-        const mailStr = currentUser.email.split('@')[0];
-        openAccountBtn.textContent = `👤 ${mailStr}`;
-        openAccountBtn.style.color = '#8df0b3';
-        openAccountBtn.style.borderColor = 'rgba(34,197,94,0.3)';
-      }
-    }
-
-    // Initialize Firebase Services safely
-    async function initFirebase() {
-      let config = null;
-
-      if (typeof __firebase_config !== 'undefined' && __firebase_config) {
-        config = JSON.parse(__firebase_config);
-      } else {
-        const localConfigRaw = localStorage.getItem(FIREBASE_CONFIG_KEY);
-        if (localConfigRaw) {
-          try {
-            config = JSON.parse(localConfigRaw);
-          } catch (e) {
-            console.error("Invalid local Firebase Config JSON", e);
-          }
-        }
-      }
-
-      if (!config) {
-        fallbackToLocalMode();
-        return;
-      }
-
+    // Writes configurations and balance state to cloud Firestore
+    async function saveStateToCloud() {
+      if (!isCloudActive || !auth || !auth.currentUser) return;
       try {
-        updateConnectionStatus('syncing');
-        firebaseApp = initializeApp(config);
-        auth = getAuth(firebaseApp);
-        db = getFirestore(firebaseApp);
-        isCloudActive = true;
-
-        // Strict rule 3: Listeners and Auth first
-        onAuthStateChanged(auth, async (user) => {
-          currentUser = user;
-          updateAuthUI();
-          if (user) {
-            await setupRealtimeSync();
-          } else {
-            try {
-              await signInAnonymously(auth);
-            } catch (err) {
-              console.error("Anonymous authentication failed", err);
-              fallbackToLocalMode();
-            }
-          }
-        });
-
-        // Initialize user login session
-        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-          await signInWithCustomToken(auth, __initial_auth_token);
-        } else {
-          if (!auth.currentUser) {
-            await signInAnonymously(auth);
-          }
-        }
-
-      } catch (err) {
-        console.error("Firebase connection crashed, falling back", err);
-        fallbackToLocalMode();
-      }
-    }
-
-    function fallbackToLocalMode() {
-      isCloudActive = false;
-      state = loadLocalFallback();
-      updateConnectionStatus('offline');
-      updateAuthUI();
-      render();
-    }
-
-    // Realtime Firestore synchronization (Rule 1 & Rule 2 compliant)
-    async function setupRealtimeSync() {
-      if (!currentUser) return;
-      const userId = currentUser.uid;
-
-      const configDocRef = doc(db, 'artifacts', appId, 'users', userId, 'config', 'main');
-      const tradesColRef = collection(db, 'artifacts', appId, 'users', userId, 'trades');
-
-      // Wipe out existing listeners
-      if (configUnsubscribe) configUnsubscribe();
-      if (tradesUnsubscribe) tradesUnsubscribe();
-
-      updateConnectionStatus('syncing');
-
-      // 1. Sync config
-      configUnsubscribe = onSnapshot(configDocRef, (snap) => {
-        if (snap.exists()) {
-          const cloudConfig = snap.data();
-          state.settings = cloudConfig.settings || state.settings;
-          state.accounts = cloudConfig.accounts || state.accounts;
-          state.currentAccountId = cloudConfig.currentAccountId || state.currentAccountId;
-        } else {
-          saveConfigToCloud();
-        }
-        render();
-        updateConnectionStatus('online');
-      }, (error) => {
-        console.error("Config synchronization error", error);
-        fallbackToLocalMode();
-      });
-
-      // 2. Sync trades (Rule 2 simple query - sorted locally inside memory)
-      tradesUnsubscribe = onSnapshot(tradesColRef, (snap) => {
-        const loadedTrades = [];
-        snap.forEach((doc) => {
-          loadedTrades.push({ id: doc.id, ...doc.data() });
-        });
-
-        // Local JS Sort by date descending
-        loadedTrades.sort((a, b) => new Date(b.date) - new Date(a.date));
-        state.trades = loadedTrades;
-        
-        render();
-        updateConnectionStatus('online');
-      }, (error) => {
-        console.error("Trades list sync crashed", error);
-      });
-    }
-
-    // Store config on the database
-    async function saveConfigToCloud() {
-      if (!isCloudActive || !currentUser) {
-        saveLocalState();
-        return;
-      }
-      const userId = currentUser.uid;
-      const configDocRef = doc(db, 'artifacts', appId, 'users', userId, 'config', 'main');
-      try {
+        const userId = auth.currentUser.uid;
+        const configDocRef = doc(db, 'artifacts', appId, 'users', userId, 'config', 'state');
         await setDoc(configDocRef, {
           settings: state.settings,
           accounts: state.accounts,
           currentAccountId: state.currentAccountId
         });
-      } catch (error) {
-        console.error("Error updating config document:", error);
+      } catch (e) {
+        console.error("Error saving state to Firestore:", e);
       }
     }
 
-    // Save trade to the database
-    async function uploadTradeToCloud(tradeObj) {
-      if (!isCloudActive || !currentUser) {
-        state.trades.unshift(tradeObj);
-        saveLocalState();
-        render();
-        return;
-      }
-
-      updateConnectionStatus('syncing');
-      const userId = currentUser.uid;
-      const tradeDocRef = doc(db, 'artifacts', appId, 'users', userId, 'trades', tradeObj.id);
-      
-      try {
-        await setDoc(tradeDocRef, tradeObj);
-        await saveConfigToCloud();
-        showToast("Operación guardada en la nube");
-      } catch (error) {
-        console.error("Error saving trade to cloud", error);
-        showToast("Error de guardado: " + error.message, "error");
-      }
-    }
-
-    // Delete trade
-    async function deleteTradeFromCloud(tradeId) {
-      if (!isCloudActive || !currentUser) {
-        state.trades = state.trades.filter(t => t.id !== tradeId);
-        saveLocalState();
-        render();
-        return;
-      }
-
-      updateConnectionStatus('syncing');
-      const userId = currentUser.uid;
-      const tradeDocRef = doc(db, 'artifacts', appId, 'users', userId, 'trades', tradeId);
-      
-      try {
-        await deleteDoc(tradeDocRef);
-        showToast("Operación eliminada de la nube", "warning");
-      } catch (err) {
-        showToast("No se pudo eliminar: " + err.message, "error");
-      }
-    }
-
-    // Metric Calculations & Render Helpers
     function getActiveAccounts() {
       return state.accounts.filter(a => a.status === 'active');
     }
@@ -1384,7 +951,6 @@
       }
     }
 
-    // Render components on UI
     function renderAccounts() {
       accountsContainer.innerHTML = '';
       state.accounts.forEach(account => {
@@ -1413,7 +979,7 @@
             </div>
             <div class="mini">
               <span>PnL</span>
-              <strong style="color: ${pnl > 0 ? 'var(--green)' : pnl < 0 ? 'var(--red)' : 'inherit'}">${formatMoney(pnl)}</strong>
+              <strong>${formatMoney(pnl)}</strong>
             </div>
             <div class="mini">
               <span>Wins / Losses</span>
@@ -1429,7 +995,7 @@
             <span class="subtle">Progreso al target (${account.profitTargetPercent}%)</span>
             <div class="bar"><div style="width:${progressPct}%;"></div></div>
             <div class="progress-bottom">
-              <span class="subtle">${formatMoney(targetRemainingAmount)} para objetivo</span>
+              <span class="subtle">${formatMoney(targetRemainingAmount)} para alcanzar el objetivo</span>
               <span class="target-missing">${targetRemainingPct.toFixed(2)}%</span>
             </div>
           </div>
@@ -1441,7 +1007,7 @@
             </div>
             <div class="mini">
               <span>Margen DD restante</span>
-              <strong style="color: ${ddLeft < (drawdownAmount * 0.3) ? 'var(--red)' : 'inherit'}">${formatMoney(ddLeft)}</strong>
+              <strong>${formatMoney(ddLeft)}</strong>
             </div>
           </div>
 
@@ -1472,23 +1038,22 @@
           const id = e.target.dataset.accountId;
           const field = e.target.dataset.accountInput;
           const value = Number(e.target.value);
-          
           state.accounts = state.accounts.map(a => a.id === id ? { ...a, [field]: value } : a);
           syncStatuses();
-          await saveConfigToCloud();
+          saveState();
+          await saveStateToCloud();
           render();
         });
       });
     }
 
     function renderTradeAccountOptions() {
-      const selectedValue = tradeAccount.value || state.currentAccountId || '';
       tradeAccount.innerHTML = '';
       state.accounts.forEach(account => {
         const option = document.createElement('option');
         option.value = account.id;
         option.textContent = `${account.name} (${account.status === 'active' ? 'Activa' : account.status === 'passed' ? 'Aprobada' : 'Fallida'})`;
-        if (account.id === selectedValue) option.selected = true;
+        if (account.id === state.currentAccountId) option.selected = true;
         tradeAccount.appendChild(option);
       });
     }
@@ -1498,8 +1063,8 @@
       const reason = document.getElementById('nextAccountReason');
       const current = state.accounts.find(a => a.id === state.currentAccountId);
       if (!current) {
-        label.textContent = 'Sin cuentas';
-        reason.textContent = 'Todas las cuentas quedaron fuera de la rotación.';
+        label.textContent = 'Sin cuentas activas';
+        reason.textContent = 'Todas las cuentas quedaron fuera de la rotación. Necesitas reiniciar o reemplazar cuentas.';
         return;
       }
 
@@ -1509,18 +1074,18 @@
         reason.textContent = 'Al inicio del ciclo la cuenta sugerida es A.';
       } else {
         const resultText = lastTrade.result === 'win' ? 'Win' : lastTrade.result === 'loss' ? 'Loss' : 'Breakeven';
-        reason.textContent = `Última operación: ${resultText} en ${lastTrade.accountName}. Sugerida: ${current.name}.`;
+        reason.textContent = `La última operación fue ${resultText} en ${lastTrade.accountName}. Por eso la siguiente sugerida es ${current.name}.`;
       }
     }
 
     function renderHistory() {
       if (!state.trades.length) {
-        historyContainer.innerHTML = '<div class="empty">No hay operaciones registradas. ¡Comienza cargando un trade!</div>';
+        historyContainer.innerHTML = '<div class="empty">Todavía no hay operaciones registradas.</div>';
         return;
       }
 
       const rows = state.trades.map(trade => `
-        <tr data-trade-id="${trade.id}">
+        <tr>
           <td>${formatDate(trade.date)}</td>
           <td>${trade.accountName}</td>
           <td><span class="tag ${trade.result}">${trade.result === 'win' ? 'Win' : trade.result === 'loss' ? 'Loss' : 'Breakeven'}</span></td>
@@ -1529,11 +1094,8 @@
           <td>${trade.pnl === null || trade.pnl === undefined || trade.pnl === '' ? '-' : formatMoney(trade.pnl)}</td>
           <td>${trade.nextAccountName || '-'}</td>
           <td>${escapeHtml(trade.setup || '-')}</td>
-          <td>
-            <button class="danger delete-trade-btn" style="padding: 4px 8px; font-size: 11px; border-radius: 6px;">🗑️</button>
-          </td>
         </tr>
-        ${trade.notes ? `<tr><td colspan="9" class="note" style="background: rgba(255,255,255,0.015); border-bottom: 2px solid rgba(255,255,255,0.02)"><strong>Notas:</strong> ${escapeHtml(trade.notes)}</td></tr>` : ''}
+        ${trade.notes ? `<tr><td colspan="8" class="note">${escapeHtml(trade.notes)}</td></tr>` : ''}
       `).join('');
 
       historyContainer.innerHTML = `
@@ -1548,30 +1110,11 @@
               <th>PnL</th>
               <th>Siguiente</th>
               <th>Setup</th>
-              <th></th>
             </tr>
           </thead>
           <tbody>${rows}</tbody>
         </table>
       `;
-
-      // Trigger deletion triggers
-      document.querySelectorAll('.delete-trade-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          const row = e.target.closest('tr');
-          const tradeId = row.dataset.tradeId;
-          const trade = state.trades.find(t => t.id === tradeId);
-          
-          showCustomModal(
-            "Eliminar operación", 
-            `¿Estás seguro de que quieres borrar el trade en la cuenta ${trade.accountName}? El balance de la cuenta no se revertirá automáticamente.`, 
-            true, 
-            async () => {
-              await deleteTradeFromCloud(tradeId);
-            }
-          );
-        });
-      });
     }
 
     function renderSummary() {
@@ -1586,6 +1129,7 @@
     function renderSettings() {
       defaultRisk.value = state.settings.defaultRiskPercent;
       breakEvenBehavior.value = state.settings.breakEvenBehavior;
+      tradeRisk.value = state.settings.defaultRiskPercent;
     }
 
     function renderResultButtons() {
@@ -1619,7 +1163,7 @@
       const label = projected.mode === 'manual' ? 'PnL manual' : 'PnL estimado';
       const help = projected.mode === 'manual'
         ? 'Se usará el PnL que cargaste manualmente.'
-        : 'Se calculará automáticamente al guardar.';
+        : 'Se calculará automáticamente si no cargas PnL manual.';
       pnlPreview.innerHTML = `<span>${label}</span><strong>${formatMoney(projected.value)}</strong><small>${help}</small>`;
     }
 
@@ -1633,6 +1177,7 @@
       renderSettings();
       renderResultButtons();
       renderPnlPreview();
+      saveState();
     }
 
     function escapeHtml(text) {
@@ -1661,119 +1206,98 @@
       });
     }
 
-    // Modal UI Action controllers
-    function openAccountModal() {
-      if (!isCloudActive || !currentUser) {
-        showToast("Conexión con la nube inactiva. Configúrala primero.", "warning");
-        return;
-      }
-      
-      accountModal.classList.add('active');
-      modalEmail.value = '';
-      modalPass.value = '';
+    // --- FIREBASE SYNC IMPLEMENTATION ---
 
-      if (currentUser.isAnonymous) {
-        anonPanel.style.display = 'grid';
-        userPanel.style.display = 'none';
-        document.getElementById('accountModalTitle').textContent = 'Vincular Nube';
-        updateModalTabs();
-      } else {
-        anonPanel.style.display = 'none';
-        userPanel.style.display = 'grid';
-        userDisplayEmail.textContent = currentUser.email;
-        document.getElementById('accountModalTitle').textContent = 'Perfil de Usuario';
-      }
-    }
-
-    function updateModalTabs() {
-      if (currentAuthTab === 'register') {
-        tabRegister.classList.add('active');
-        tabLogin.classList.remove('active');
-        authSubmitBtn.textContent = 'Vincular Datos Existentes';
-      } else {
-        tabRegister.classList.remove('active');
-        tabLogin.classList.add('active');
-        authSubmitBtn.textContent = 'Iniciar Sesión';
-      }
-    }
-
-    // Event listeners
-    openAccountBtn.addEventListener('click', openAccountModal);
-    closeAccountModalBtn.addEventListener('click', () => accountModal.classList.remove('active'));
-
-    tabRegister.addEventListener('click', () => {
-      currentAuthTab = 'register';
-      updateModalTabs();
-    });
-
-    tabLogin.addEventListener('click', () => {
-      currentAuthTab = 'login';
-      updateModalTabs();
-    });
-
-    // Account Sign In / Sign Up handler inside modal
-    authSubmitBtn.addEventListener('click', async () => {
-      const email = modalEmail.value.trim();
-      const password = modalPass.value;
-
-      if (!email || !password) {
-        showToast("Completa email y contraseña", "warning");
-        return;
-      }
-      if (password.length < 6) {
-        showToast("La contraseña debe tener al menos 6 caracteres", "warning");
-        return;
-      }
-
-      authSubmitBtn.disabled = true;
-      authSubmitBtn.textContent = 'Procesando...';
-
+    async function initFirebase(config) {
       try {
-        if (currentAuthTab === 'register') {
-          // Rule 3: Upgrade anonymous user account with linkWithCredential so trades are kept
-          const credential = EmailAuthProvider.credential(email, password);
-          await linkWithCredential(auth.currentUser, credential);
-          showToast("¡Sincronización exitosa! Cuenta creada.", "success");
-        } else {
-          // Log into existing account
-          await signInWithEmailAndPassword(auth, email, password);
-          showToast("¡Sesión iniciada correctamente!", "success");
-        }
-        accountModal.classList.remove('active');
-      } catch (err) {
-        console.error("Authentication error inside modal:", err);
-        let msg = "Error al autenticar. Verifica los datos.";
-        if (err.code === "auth/email-already-in-use") {
-          msg = "Este correo electrónico ya está registrado. Usa la pestaña 'Ya tengo una cuenta'.";
-        } else if (err.code === "auth/invalid-credential") {
-          msg = "Credenciales incorrectas o inválidas.";
-        } else if (err.code === "auth/credential-already-in-use") {
-          msg = "Esta cuenta ya está vinculada a otro correo.";
-        }
-        showCustomModal("Error de Autenticación", msg, false, null);
-      } finally {
-        authSubmitBtn.disabled = false;
-        updateModalTabs();
+        firebaseApp = initializeApp(config);
+        auth = getAuth(firebaseApp);
+        db = getFirestore(firebaseApp);
+        isCloudActive = true;
+
+        document.getElementById('cloudStatus').textContent = "☁️ Conectando...";
+        document.getElementById('cloudStatus').style.background = "rgba(245,158,11,0.15)";
+        document.getElementById('cloudStatus').style.color = "var(--yellow)";
+
+        // RULE 3 - Auth Before Queries
+        const initAuth = async () => {
+          if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+            await signInWithCustomToken(auth, __initial_auth_token);
+          } else {
+            await signInAnonymously(auth);
+          }
+        };
+        await initAuth();
+
+        onAuthStateChanged(auth, (user) => {
+          if (user) {
+            setupRealtimeSync(user.uid);
+          } else {
+            fallbackToLocal();
+          }
+        });
+      } catch (e) {
+        console.error("Firebase Initialization Error:", e);
+        showNotification("Error de conexión Cloud. Revisa las credenciales de Firebase.", "error");
+        fallbackToLocal();
       }
-    });
+    }
 
-    doLogoutBtn.addEventListener('click', async () => {
-      showCustomModal(
-        "Cerrar sesión", 
-        "¿Estás seguro de que quieres salir? Se creará una sesión temporal en este navegador.", 
-        true, 
-        async () => {
-          if (configUnsubscribe) configUnsubscribe();
-          if (tradesUnsubscribe) tradesUnsubscribe();
-          
-          await signOut(auth);
-          accountModal.classList.remove('active');
-          showToast("Cerraste sesión", "warning");
+    function setupRealtimeSync(userId) {
+      // RULE 1 - Strict paths compliant
+      const configDocRef = doc(db, 'artifacts', appId, 'users', userId, 'config', 'state');
+      const tradesColRef = collection(db, 'artifacts', appId, 'users', userId, 'trades');
+
+      if (configUnsubscribe) configUnsubscribe();
+      if (tradesUnsubscribe) tradesUnsubscribe();
+
+      // Config and Account sync
+      configUnsubscribe = onSnapshot(configDocRef, (snap) => {
+        if (snap.exists()) {
+          const cloudData = snap.data();
+          state.settings = cloudData.settings || state.settings;
+          state.accounts = cloudData.accounts || state.accounts;
+          state.currentAccountId = cloudData.currentAccountId || state.currentAccountId;
+          render();
+        } else {
+          saveStateToCloud();
         }
-      );
-    });
+        document.getElementById('cloudStatus').textContent = "☁️ Sincronizado";
+        document.getElementById('cloudStatus').style.background = "rgba(34,197,94,0.15)";
+        document.getElementById('cloudStatus').style.color = "var(--green)";
+      }, (err) => {
+        console.error("Config Sync Error:", err);
+        showNotification("Fallo de permisos en la nube. Revisa las reglas de Firestore.", "error");
+        fallbackToLocal();
+      });
 
-    // Main Trade Form Submit Trigger
+      // Trades sync (RULE 2 - simple query, sort locally in memory)
+      tradesUnsubscribe = onSnapshot(tradesColRef, (snap) => {
+        const cloudTrades = [];
+        snap.forEach((doc) => {
+          cloudTrades.push({ id: doc.id, ...doc.data() });
+        });
+        cloudTrades.sort((a, b) => new Date(b.date) - new Date(a.date));
+        state.trades = cloudTrades;
+        render();
+      }, (err) => {
+        console.error("Trades Sync Error:", err);
+      });
+    }
+
+    function fallbackToLocal() {
+      isCloudActive = false;
+      state = loadState();
+      document.getElementById('cloudStatus').textContent = "Modo Local";
+      document.getElementById('cloudStatus').style.background = "rgba(255,255,255,0.05)";
+      document.getElementById('cloudStatus').style.color = "var(--muted)";
+      if (configUnsubscribe) configUnsubscribe();
+      if (tradesUnsubscribe) tradesUnsubscribe();
+      render();
+    }
+
+    // --- ACTIONS AND FORMS LOGIC ---
+
     tradeForm.addEventListener('submit', async e => {
       e.preventDefault();
       const accountId = tradeAccount.value;
@@ -1824,14 +1348,30 @@
         nextAccountName: nextAccount ? nextAccount.name : null
       };
 
-      // Reset fields
+      // Reset Form fields
       tradeDate.value = getNowForInput();
       tradeSetup.value = '';
       tradeNotes.value = '';
       tradePnl.value = '';
       tradeRisk.value = state.settings.defaultRiskPercent;
-      
-      await uploadTradeToCloud(newTrade);
+      tradeAccount.value = state.currentAccountId || state.accounts[0]?.id || '';
+
+      if (isCloudActive && auth && auth.currentUser) {
+        try {
+          const userId = auth.currentUser.uid;
+          const tradeDocRef = doc(db, 'artifacts', appId, 'users', userId, 'trades', newTrade.id);
+          await setDoc(tradeDocRef, newTrade);
+          await saveStateToCloud();
+          showNotification("Operación registrada en Cloud!");
+        } catch (err) {
+          console.error("Save Cloud error:", err);
+          showNotification("Operación guardada localmente por fallo de red.", "warning");
+        }
+      } else {
+        state.trades.unshift(newTrade);
+        saveState();
+        render();
+      }
     });
 
     document.querySelectorAll('.result-btn').forEach(btn => {
@@ -1848,13 +1388,15 @@
     defaultRisk.addEventListener('change', async () => {
       state.settings.defaultRiskPercent = Number(defaultRisk.value || 0);
       tradeRisk.value = state.settings.defaultRiskPercent;
-      await saveConfigToCloud();
+      saveState();
+      await saveStateToCloud();
       render();
     });
 
     breakEvenBehavior.addEventListener('change', async () => {
       state.settings.breakEvenBehavior = breakEvenBehavior.value;
-      await saveConfigToCloud();
+      saveState();
+      await saveStateToCloud();
       render();
     });
 
@@ -1863,50 +1405,12 @@
       el.addEventListener('change', renderPnlPreview);
     });
 
-    // Setup Cloud Dialog Buttons
-    document.getElementById('openSetupModalBtn').addEventListener('click', () => {
-      const localConfigRaw = localStorage.getItem(FIREBASE_CONFIG_KEY);
-      if (localConfigRaw) {
-        document.getElementById('firebaseConfigInput').value = localConfigRaw;
-      }
-      document.getElementById('firebaseSetupModal').classList.add('active');
-    });
-
-    document.getElementById('closeSetupBtn').addEventListener('click', () => {
-      document.getElementById('firebaseSetupModal').classList.remove('active');
-    });
-
-    document.getElementById('saveSetupBtn').addEventListener('click', () => {
-      const input = document.getElementById('firebaseConfigInput').value.trim();
-      if (!input) {
-        localStorage.removeItem(FIREBASE_CONFIG_KEY);
-        showToast("Configuración en la nube desactivada", "warning");
-        document.getElementById('firebaseSetupModal').classList.remove('active');
-        initFirebase();
-        return;
-      }
-
-      try {
-        const parsed = JSON.parse(input);
-        if (!parsed.apiKey || !parsed.projectId) {
-          throw new Error("Faltan parámetros obligatorios de Firebase");
-        }
-        localStorage.setItem(FIREBASE_CONFIG_KEY, JSON.stringify(parsed));
-        showToast("Ajustes guardados. Conectando...", "success");
-        document.getElementById('firebaseSetupModal').classList.remove('active');
-        initFirebase();
-      } catch (err) {
-        showCustomModal("Error", "JSON no válido. Revisa que todas las claves tengan comillas dobles y no haya caracteres de sobra.", false, null);
-      }
-    });
-
-    // Backup Import/Export triggers
     document.getElementById('exportBtn').addEventListener('click', () => {
       const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `switch-on-sl-data-${new Date().toISOString().split('T')[0]}.json`;
+      a.download = 'switch-on-sl-data.json';
       a.click();
       URL.revokeObjectURL(url);
     });
@@ -1927,50 +1431,99 @@
           settings: { ...defaultState.settings, ...(imported.settings || {}) }
         };
         
-        await saveConfigToCloud();
-        
-        // Multi-add cloud trades if active (Rule 2 simple querying)
-        if (isCloudActive && currentUser && imported.trades) {
-          for (const trade of imported.trades) {
-            await setDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'trades', trade.id || crypto.randomUUID()), trade);
+        saveState();
+        await saveStateToCloud();
+
+        if (isCloudActive && auth && auth.currentUser && imported.trades) {
+          const userId = auth.currentUser.uid;
+          for (const t of imported.trades) {
+            const docRef = doc(db, 'artifacts', appId, 'users', userId, 'trades', t.id || crypto.randomUUID());
+            await setDoc(docRef, t).catch(()=>{});
           }
         }
         
-        showToast("Datos importados con éxito");
         render();
+        showNotification("Datos importados correctamente.");
       } catch {
-        showCustomModal("Error", "No se pudo importar el archivo. El formato JSON no es compatible.", false, null);
+        customAlert("Error", "No se pudo importar el archivo. Verifica que sea un JSON válido.");
       } finally {
         e.target.value = '';
       }
     });
 
     document.getElementById('resetBtn').addEventListener('click', () => {
-      showCustomModal(
-        "Resetear todo", 
-        "Esta acción eliminará de forma irreversible todas las operaciones del historial y restaurará los balances. ¿Proceder?", 
-        true, 
-        async () => {
-          state = structuredClone(defaultState);
-          selectedResult = 'win';
-          tradeDate.value = getNowForInput();
-          
-          if (isCloudActive && currentUser) {
-            const userId = currentUser.uid;
+      customConfirm('Confirmar Reset', 'Esto borrará todas las operaciones locales y en la nube y restaurará las 3 cuentas iniciales.', async () => {
+        if (isCloudActive && auth && auth.currentUser) {
+          try {
+            const userId = auth.currentUser.uid;
+            // Clean trades
             for(const t of state.trades) {
-              await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'trades', t.id));
+              const tradeDocRef = doc(db, 'artifacts', appId, 'users', userId, 'trades', t.id);
+              await deleteDoc(tradeDocRef).catch(()=>{});
             }
+          } catch(e) {
+            console.error(e);
           }
-          await saveConfigToCloud();
-          showToast("Tracker reseteado por completo", "warning");
-          render();
         }
-      );
+
+        state = structuredClone(defaultState);
+        selectedResult = 'win';
+        tradeDate.value = getNowForInput();
+        
+        saveState();
+        await saveStateToCloud();
+        render();
+        showNotification("Se ha reiniciado el tracker.", "warning");
+      });
     });
 
-    // Page initialization
+    // Firebase configuration triggers
+    document.getElementById('fbSetupBtn').addEventListener('click', () => {
+      const localConfigRaw = localStorage.getItem(FIREBASE_CONFIG_KEY);
+      if (localConfigRaw) {
+        document.getElementById('firebaseConfigTextarea').value = localConfigRaw;
+      }
+      document.getElementById('firebaseSetupModal').classList.add('active');
+    });
+
+    document.getElementById('saveFirebaseBtn').addEventListener('click', () => {
+      const rawInput = document.getElementById('firebaseConfigTextarea').value.trim();
+      if (!rawInput) {
+        localStorage.removeItem(FIREBASE_CONFIG_KEY);
+        document.getElementById('firebaseSetupModal').classList.remove('active');
+        fallbackToLocal();
+        showNotification("Modo Cloud desactivado.", "warning");
+        return;
+      }
+
+      try {
+        const parsed = JSON.parse(rawInput);
+        if (!parsed.apiKey || !parsed.projectId) {
+          throw new Error();
+        }
+        localStorage.setItem(FIREBASE_CONFIG_KEY, JSON.stringify(parsed));
+        document.getElementById('firebaseSetupModal').classList.remove('active');
+        showNotification("Configuración de Firebase guardada. Conectando...");
+        initFirebase(parsed);
+      } catch {
+        customAlert("Error", "El JSON provisto no es válido. Asegúrate de copiar las propiedades de tu objeto firebaseConfig de manera íntegra.");
+      }
+    });
+
+    // Start Page
     tradeDate.value = getNowForInput();
-    initFirebase();
+
+    // Check if there is an active Firebase configuration saved
+    const savedConfig = localStorage.getItem(FIREBASE_CONFIG_KEY);
+    if (savedConfig) {
+      try {
+        initFirebase(JSON.parse(savedConfig));
+      } catch {
+        fallbackToLocal();
+      }
+    } else {
+      fallbackToLocal();
+    }
   </script>
 </body>
 </html>
