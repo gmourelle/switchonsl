@@ -96,17 +96,6 @@
       100% { opacity: 0.4; }
     }
 
-    .auth-badge {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background: rgba(110,168,254,0.1);
-      border: 1px solid rgba(110,168,254,0.2);
-      padding: 6px 14px;
-      border-radius: 999px;
-      font-size: 13px;
-    }
-
     .hero, .card {
       background: rgba(19, 26, 46, 0.95);
       border: 1px solid var(--border);
@@ -148,11 +137,6 @@
     .grid {
       display: grid;
       grid-template-columns: 1.15fr 0.85fr;
-      gap: 20px;
-    }
-
-    .stack {
-      display: grid;
       gap: 20px;
     }
 
@@ -583,7 +567,7 @@
       z-index: 1000;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.3s ease;
+      transition: opacity 0.25s ease;
       padding: 16px;
     }
 
@@ -600,8 +584,8 @@
       width: 100%;
       max-width: 500px;
       padding: 28px;
-      transform: scale(0.9);
-      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      transform: scale(0.92);
+      transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
       display: grid;
       gap: 20px;
     }
@@ -668,6 +652,32 @@
       }
     }
 
+    /* Tabs inside account modal */
+    .auth-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: rgba(0,0,0,0.2);
+      border-radius: 10px;
+      padding: 4px;
+    }
+
+    .auth-tab-btn {
+      background: none;
+      border: none;
+      color: var(--muted);
+      padding: 8px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 13px;
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+
+    .auth-tab-btn.active {
+      background: var(--panel-2);
+      color: var(--text);
+    }
+
     @media (max-width: 980px) {
       .grid { grid-template-columns: 1fr; }
       .accounts { grid-template-columns: 1fr; }
@@ -698,54 +708,100 @@
     </div>
   </div>
 
-  <!-- Firebase Setup Assistant Modal -->
+  <!-- Realtime Notification Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Firebase Connection Setup Modal -->
   <div id="firebaseSetupModal" class="modal-backdrop">
-    <div class="modal-content" style="max-width: 600px;">
-      <div class="modal-title">Sincronización Cloud Firebase</div>
+    <div class="modal-content" style="max-width: 550px;">
+      <div class="modal-title">Configuración Cloud (Firebase)</div>
       <div class="modal-body">
-        <p style="margin-bottom: 12px;">Para sincronizar tus datos en la nube (ideal para GitHub Pages), necesitas crear un proyecto gratuito en Firebase e ingresar tu configuración aquí:</p>
+        <p style="margin-bottom: 12px;">Para guardar tus datos en tiempo real y acceder a ellos desde cualquier navegador o teléfono móvil, pega tu objeto `firebaseConfig` aquí:</p>
         <div style="display: grid; gap: 12px; margin-top: 10px;">
           <div class="field">
-            <label>Firebase Config (Formato JSON o pegado del SDK)</label>
-            <textarea id="firebaseConfigInput" style="font-family: monospace; font-size: 12px; min-height: 160px;" placeholder='{
+            <label>Código JSON de configuración</label>
+            <textarea id="firebaseConfigInput" style="font-family: monospace; font-size: 12px; min-height: 140px;" placeholder='{
   "apiKey": "AIzaSy...",
-  "authDomain": "tu-proyecto.firebaseapp.com",
-  "projectId": "tu-proyecto",
-  "storageBucket": "tu-proyecto.appspot.com",
-  "messagingSenderId": "123456789",
-  "appId": "1:1234..."
+  "authDomain": "tu-app.firebaseapp.com",
+  "projectId": "tu-app",
+  "storageBucket": "tu-app.firebasestorage.app",
+  "messagingSenderId": "301060369311",
+  "appId": "1:3010..."
 }'></textarea>
           </div>
           <p style="font-size: 12px; color: var(--muted); line-height: 1.4;">
-            <strong>¿Cómo obtenerlo?</strong><br>
-            1. Entra a <a href="https://console.firebase.google.com" target="_blank" style="color: var(--accent);">Firebase Console</a> y crea un proyecto.<br>
-            2. Agrega una "Web App" al proyecto.<br>
-            3. Habilita <strong>Cloud Firestore</strong> y <strong>Anonymous Authentication</strong> (o Email/Password).<br>
-            4. Copia el objeto `firebaseConfig` que te darán y pégalo arriba.
+            <strong>Importante:</strong> Asegúrate de pegar un formato JSON puro (como el ejemplo de arriba), con todas las propiedades encerradas en comillas dobles y sin el punto y coma final.
           </p>
         </div>
       </div>
       <div class="modal-footer">
-        <button id="closeSetupBtn" class="secondary">Usar Local (Sin Nube)</button>
-        <button id="saveSetupBtn" class="primary">Conectar Firebase</button>
+        <button id="closeSetupBtn" class="secondary">Cancelar</button>
+        <button id="saveSetupBtn" class="primary">Guardar y Conectar</button>
       </div>
     </div>
   </div>
 
-  <!-- Realtime Notification Container -->
-  <div id="toastContainer" class="toast-container"></div>
+  <!-- Auth/Account Interactive Modal -->
+  <div id="accountModal" class="modal-backdrop">
+    <div class="modal-content" style="max-width: 440px;">
+      <div class="modal-title" id="accountModalTitle">Sincronizar Cuenta</div>
+      
+      <!-- Panel de Opciones para Usuario Anónimo -->
+      <div id="anonPanel" style="display: none; grid-gap: 16px; gap: 16px;">
+        <p class="subtle" style="font-size: 13px;">Estás en una sesión temporal. Vincula un correo electrónico para que tus datos se guarden para siempre y puedas abrirlos en cualquier lugar.</p>
+        
+        <div class="auth-tabs">
+          <button id="tabRegister" class="auth-tab-btn active">Crear & Vincular Cuenta</button>
+          <button id="tabLogin" class="auth-tab-btn">Ya tengo una cuenta</button>
+        </div>
+
+        <div style="display: grid; gap: 12px;">
+          <div class="field">
+            <label>Correo Electrónico</label>
+            <input type="email" id="modalEmail" placeholder="tu@ejemplo.com">
+          </div>
+          <div class="field">
+            <label>Contraseña</label>
+            <input type="password" id="modalPass" placeholder="Mínimo 6 caracteres">
+          </div>
+        </div>
+
+        <button id="authSubmitBtn" class="primary" style="width: 100%; padding: 12px;">Sincronizar y Guardar Datos</button>
+      </div>
+
+      <!-- Panel de Opciones para Usuario con Email permanente -->
+      <div id="userPanel" style="display: none; grid-gap: 16px; gap: 16px;">
+        <div style="text-align: center; padding: 16px 0;">
+          <div style="font-size: 40px; margin-bottom: 8px;">👤</div>
+          <strong id="userDisplayEmail" style="word-break: break-all; font-size: 16px;">email@usuario.com</strong>
+          <p class="subtle" style="font-size: 13px; margin-top: 6px;">Tus datos se encuentran seguros y sincronizados en la nube.</p>
+        </div>
+        <button id="doLogoutBtn" class="danger" style="width: 100%; padding: 12px;">Cerrar Sesión</button>
+      </div>
+
+      <div class="modal-footer">
+        <button id="closeAccountModalBtn" class="secondary" style="width: 100%;">Cerrar Ventana</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Header -->
- <header>
+  <header>
     <div class="logo-area">
       <h1>Switch On SL Tracker</h1>
       <div class="cloud-status">
         <span id="statusDot" class="status-dot"></span>
-        <span id="statusText">Desconectado</span>
+        <span id="statusText">Modo Local</span>
       </div>
     </div>
-    <div id="authContainer" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-      <span class="subtle" style="font-size: 13px;">Cargando usuario...</span>
+    <div class="actions" style="align-items: center;">
+      <!-- Interactive Account Controller -->
+      <div id="headerAuthBtnContainer">
+        <button class="secondary" id="openAccountBtn" style="padding: 8px 14px; font-size: 13px; border-color: rgba(110,168,254,0.3); color: #b9d3ff;">
+          👤 Cuentas Cloud
+        </button>
+      </div>
+      <button class="secondary" id="openSetupModalBtn" style="padding: 8px 12px; font-size: 13px;">⚙️ Conexión</button>
     </div>
   </header>
 
@@ -910,7 +966,8 @@
       signInAnonymously, 
       onAuthStateChanged, 
       signOut, 
-      createUserWithEmailAndPassword, 
+      linkWithCredential,
+      EmailAuthProvider,
       signInWithEmailAndPassword 
     } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { 
@@ -920,9 +977,7 @@
       getDoc, 
       collection, 
       onSnapshot, 
-      addDoc, 
-      deleteDoc, 
-      query 
+      deleteDoc 
     } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     const STORAGE_KEY = 'switch-on-sl-tracker-v1';
@@ -942,7 +997,7 @@
       trades: []
     };
 
-    // App state
+    // App core state
     let state = structuredClone(defaultState);
     let selectedResult = 'win';
     let isCloudActive = false;
@@ -952,6 +1007,7 @@
     let currentUser = null;
     let configUnsubscribe = null;
     let tradesUnsubscribe = null;
+    let currentAuthTab = 'register'; // register o login
 
     // Globals injected by sandbox environment if available
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'switch-on-sl-tracker';
@@ -972,9 +1028,22 @@
     const breakEvenBehavior = document.getElementById('breakEvenBehavior');
     const statusDot = document.getElementById('statusDot');
     const statusText = document.getElementById('statusText');
-    const authContainer = document.getElementById('authContainer');
 
-    // Custom Modal System (prevents browser alerts/confirms blocks)
+    // UI Auth Handles
+    const openAccountBtn = document.getElementById('openAccountBtn');
+    const accountModal = document.getElementById('accountModal');
+    const closeAccountModalBtn = document.getElementById('closeAccountModalBtn');
+    const anonPanel = document.getElementById('anonPanel');
+    const userPanel = document.getElementById('userPanel');
+    const tabRegister = document.getElementById('tabRegister');
+    const tabLogin = document.getElementById('tabLogin');
+    const modalEmail = document.getElementById('modalEmail');
+    const modalPass = document.getElementById('modalPass');
+    const authSubmitBtn = document.getElementById('authSubmitBtn');
+    const doLogoutBtn = document.getElementById('doLogoutBtn');
+    const userDisplayEmail = document.getElementById('userDisplayEmail');
+
+    // Custom Modal System (eliminates blocking alert/confirms)
     function showCustomModal(title, message, showCancel, onConfirm) {
       const modal = document.getElementById('customModal');
       document.getElementById('customModalTitle').textContent = title;
@@ -984,7 +1053,6 @@
       const confirmBtn = document.getElementById('customModalConfirmBtn');
 
       cancelBtn.style.display = showCancel ? 'inline-block' : 'none';
-      
       modal.classList.add('active');
 
       const cleanup = () => {
@@ -1020,7 +1088,7 @@
       }, 3500);
     }
 
-    // Dynamic Database Status Indicators
+    // Dynamic Connection Status Indicators
     function updateConnectionStatus(status) {
       statusDot.className = 'status-dot';
       if (status === 'online') {
@@ -1028,128 +1096,14 @@
         statusText.textContent = 'Nube Activa';
       } else if (status === 'syncing') {
         statusDot.classList.add('syncing');
-        statusText.textContent = 'Sincronizando...';
+        statusText.textContent = 'Buscando datos...';
       } else {
         statusDot.classList.add('offline');
         statusText.textContent = 'Modo Local';
       }
     }
 
-    // UI Auth controller
-    // Controlador de la interfaz de autenticación (Soporta Email y Contraseña)
-    function updateAuthUI() {
-      if (!isCloudActive) {
-        authContainer.innerHTML = `
-          <button class="primary" style="padding: 6px 12px; font-size: 13px;" onclick="document.getElementById('firebaseSetupModal').classList.add('active')">
-            Activar Nube
-          </button>
-        `;
-        return;
-      }
-
-      if (!auth.currentUser) {
-        authContainer.innerHTML = `<span class="subtle" style="font-size: 13px;">Iniciando sesión...</span>`;
-        return;
-      }
-
-      if (auth.currentUser.isAnonymous) {
-        authContainer.innerHTML = `
-          <div class="actions" style="align-items: center; gap: 8px;">
-            <span class="pill active" style="font-size: 11px; padding: 3px 8px;">☁️ Sesión Temporal</span>
-            <input type="email" id="authEmail" placeholder="Tu Email" style="padding: 6px 10px; font-size: 12px; width: 140px; background: #081224;">
-            <input type="password" id="authPass" placeholder="Contraseña" style="padding: 6px 10px; font-size: 12px; width: 110px; background: #081224;">
-            <button class="primary" id="linkAccountBtn" style="padding: 6px 12px; font-size: 12px;">Vincular y Guardar Datos</button>
-            <button class="secondary" id="loginExistingBtn" style="padding: 6px 12px; font-size: 12px;">Ya tengo cuenta</button>
-            <button class="secondary" id="openSetupModalBtn" style="padding: 6px 10px; font-size: 12px;">⚙️</button>
-          </div>
-        `;
-
-        // Botón para convertir la cuenta temporal en permanente (No pierde los trades ya cargados)
-        document.getElementById('linkAccountBtn').addEventListener('click', async () => {
-          const email = document.getElementById('authEmail').value.trim();
-          const pass = document.getElementById('authPass').value;
-          if (!email || !pass) return showToast("Completa email y contraseña", "warning");
-          
-          try {
-            // Nota técnica: Se usa createUser ya que la sesión actual contiene los datos que queremos conservar
-            await createUserWithEmailAndPassword(auth, email, pass);
-            showToast("¡Cuenta creada! Datos sincronizados permanentemente.", "success");
-          } catch (err) {
-            // Si el correo ya existe, avisamos al usuario
-            if (err.code === "auth/email-already-in-use") {
-              showToast("El email ya está registrado. Usa 'Ya tengo cuenta'.", "error");
-            } else {
-              showToast(err.message, "error");
-            }
-          }
-        });
-
-        // Botón para cambiar a un login tradicional
-        document.getElementById('loginExistingBtn').addEventListener('click', () => {
-          currentUser = null; 
-          auth.signOut().then(() => {
-            // Provoca el renderizado del formulario de login limpio
-            setTimeout(() => {
-              authContainer.innerHTML = `
-                <div class="actions" style="align-items: center; gap: 8px;">
-                  <input type="email" id="loginEmail" placeholder="Tu Email" style="padding: 6px 10px; font-size: 12px; width: 150px; background: #081224;">
-                  <input type="password" id="loginPass" placeholder="Contraseña" style="padding: 6px 10px; font-size: 12px; width: 120px; background: #081224;">
-                  <button class="primary" id="doLoginBtn" style="padding: 6px 12px; font-size: 12px;">Entrar</button>
-                  <button class="secondary" id="backToAnonBtn" style="padding: 6px 12px; font-size: 12px;">Volver</button>
-                </div>
-              `;
-              
-              document.getElementById('doLoginBtn').addEventListener('click', async () => {
-                const email = document.getElementById('loginEmail').value.trim();
-                const pass = document.getElementById('loginPass').value;
-                try {
-                  await signInWithEmailAndPassword(auth, email, pass);
-                  showToast("Sesión iniciada correctamente", "success");
-                } catch (e) { showToast("Credenciales inválidas", "error"); }
-              });
-
-              document.getElementById('backToAnonBtn').addEventListener('click', () => signInAnonymously(auth));
-            }, 100);
-          });
-        });
-
-        // listener para re-vincular el botón de engranaje flotante
-        document.getElementById('openSetupModalBtn').addEventListener('click', () => {
-          const localConfigRaw = localStorage.getItem(FIREBASE_CONFIG_KEY);
-          if (localConfigRaw) document.getElementById('firebaseConfigInput').value = localConfigRaw;
-          document.getElementById('firebaseSetupModal').classList.add('active');
-        });
-
-      } else {
-        // Usuario con Email permanente logueado
-        authContainer.innerHTML = `
-          <div class="auth-badge">
-            <span>👤 ${currentUser.email}</span>
-            <button class="danger" id="logoutBtn" style="background: none; border: none; padding: 0 4px; cursor: pointer; font-size: 11px; margin-left: 8px;">
-              Salir
-            </button>
-            <button class="secondary" id="openSetupModalBtn" style="background:none; border:none; padding:0 4px; cursor:pointer; margin-left:4px; font-size:11px;">⚙️</button>
-          </div>
-        `;
-
-        document.getElementById('logoutBtn').addEventListener('click', async () => {
-          showCustomModal("Cerrar sesión", "¿Quieres salir de tu cuenta?", true, async () => {
-            if (configUnsubscribe) configUnsubscribe();
-            if (tradesUnsubscribe) tradesUnsubscribe();
-            await signOut(auth);
-            showToast("Sesión cerrada", "warning");
-          });
-        });
-
-        document.getElementById('openSetupModalBtn').addEventListener('click', () => {
-          const localConfigRaw = localStorage.getItem(FIREBASE_CONFIG_KEY);
-          if (localConfigRaw) document.getElementById('firebaseConfigInput').value = localConfigRaw;
-          document.getElementById('firebaseSetupModal').classList.add('active');
-        });
-      }
-    }
-
-    // Logic for loading state from Cloud/Local fallback
+    // Local Storage Loading Fallback
     function loadLocalFallback() {
       try {
         const raw = localStorage.getItem(STORAGE_KEY);
@@ -1171,15 +1125,38 @@
       }
     }
 
-    // Firebase Core Integration
+    // Auth state renderer inside top navigation & Modals
+    function updateAuthUI() {
+      if (!isCloudActive) {
+        openAccountBtn.style.display = 'none';
+        return;
+      }
+      openAccountBtn.style.display = 'inline-block';
+
+      if (!currentUser) {
+        openAccountBtn.textContent = '👤 Conectando...';
+        return;
+      }
+
+      if (currentUser.isAnonymous) {
+        openAccountBtn.textContent = '☁️ Sesión Temporal (Vincular)';
+        openAccountBtn.style.color = '#ffd48a';
+        openAccountBtn.style.borderColor = 'rgba(245,158,11,0.3)';
+      } else {
+        const mailStr = currentUser.email.split('@')[0];
+        openAccountBtn.textContent = `👤 ${mailStr}`;
+        openAccountBtn.style.color = '#8df0b3';
+        openAccountBtn.style.borderColor = 'rgba(34,197,94,0.3)';
+      }
+    }
+
+    // Initialize Firebase Services safely
     async function initFirebase() {
       let config = null;
 
-      // 1. Check if sandbox credentials exist
       if (typeof __firebase_config !== 'undefined' && __firebase_config) {
         config = JSON.parse(__firebase_config);
       } else {
-        // 2. Check for local custom configuration
         const localConfigRaw = localStorage.getItem(FIREBASE_CONFIG_KEY);
         if (localConfigRaw) {
           try {
@@ -1191,11 +1168,7 @@
       }
 
       if (!config) {
-        isCloudActive = false;
-        state = loadLocalFallback();
-        updateConnectionStatus('offline');
-        updateAuthUI();
-        render();
+        fallbackToLocalMode();
         return;
       }
 
@@ -1206,54 +1179,60 @@
         db = getFirestore(firebaseApp);
         isCloudActive = true;
 
-        // Rule 3: Auth FIRST
-        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-          await signInWithCustomToken(auth, __initial_auth_token);
-        } else {
-          // If no stored user session, authenticate anonymously as baseline
-          if (!auth.currentUser) {
-            await signInAnonymously(auth);
-          }
-        }
-
+        // Strict rule 3: Listeners and Auth first
         onAuthStateChanged(auth, async (user) => {
           currentUser = user;
           updateAuthUI();
           if (user) {
             await setupRealtimeSync();
           } else {
-            // Re-authenticate if user logs out or session expires
-            await signInAnonymously(auth);
+            try {
+              await signInAnonymously(auth);
+            } catch (err) {
+              console.error("Anonymous authentication failed", err);
+              fallbackToLocalMode();
+            }
           }
         });
 
+        // Initialize user login session
+        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+          await signInWithCustomToken(auth, __initial_auth_token);
+        } else {
+          if (!auth.currentUser) {
+            await signInAnonymously(auth);
+          }
+        }
+
       } catch (err) {
-        console.error("Firebase init failed:", err);
-        showToast("Error de conexión Firebase. Revisa tus credenciales.", "error");
-        isCloudActive = false;
-        state = loadLocalFallback();
-        updateConnectionStatus('offline');
-        updateAuthUI();
-        render();
+        console.error("Firebase connection crashed, falling back", err);
+        fallbackToLocalMode();
       }
     }
 
-    // Realtime Firestore Synchronization (Strict Rule 1 & Rule 2 compliant)
+    function fallbackToLocalMode() {
+      isCloudActive = false;
+      state = loadLocalFallback();
+      updateConnectionStatus('offline');
+      updateAuthUI();
+      render();
+    }
+
+    // Realtime Firestore synchronization (Rule 1 & Rule 2 compliant)
     async function setupRealtimeSync() {
       if (!currentUser) return;
       const userId = currentUser.uid;
-      
-      updateConnectionStatus('syncing');
 
-      // Rule 1 paths
       const configDocRef = doc(db, 'artifacts', appId, 'users', userId, 'config', 'main');
       const tradesColRef = collection(db, 'artifacts', appId, 'users', userId, 'trades');
 
-      // Unsubscribe existing listeners
+      // Wipe out existing listeners
       if (configUnsubscribe) configUnsubscribe();
       if (tradesUnsubscribe) tradesUnsubscribe();
 
-      // 1. Sync configuration document
+      updateConnectionStatus('syncing');
+
+      // 1. Sync config
       configUnsubscribe = onSnapshot(configDocRef, (snap) => {
         if (snap.exists()) {
           const cloudConfig = snap.data();
@@ -1261,38 +1240,34 @@
           state.accounts = cloudConfig.accounts || state.accounts;
           state.currentAccountId = cloudConfig.currentAccountId || state.currentAccountId;
         } else {
-          // If fresh user profile on the cloud, write default values to initialize
           saveConfigToCloud();
         }
         render();
         updateConnectionStatus('online');
       }, (error) => {
-        console.error("Config sync error", error);
-        showToast("Error de lectura cloud: " + error.message, "error");
-        updateConnectionStatus('offline');
+        console.error("Config synchronization error", error);
+        fallbackToLocalMode();
       });
 
-      // 2. Sync trades list. Rule 2: Get all and sort/filter in JS Memory
+      // 2. Sync trades (Rule 2 simple query - sorted locally inside memory)
       tradesUnsubscribe = onSnapshot(tradesColRef, (snap) => {
         const loadedTrades = [];
         snap.forEach((doc) => {
           loadedTrades.push({ id: doc.id, ...doc.data() });
         });
 
-        // In-memory sort descending by trade date
+        // Local JS Sort by date descending
         loadedTrades.sort((a, b) => new Date(b.date) - new Date(a.date));
         state.trades = loadedTrades;
         
         render();
         updateConnectionStatus('online');
       }, (error) => {
-        console.error("Trades sync error", error);
-        showToast("Error al cargar historial: " + error.message, "error");
-        updateConnectionStatus('offline');
+        console.error("Trades list sync crashed", error);
       });
     }
 
-    // Save configuration settings & account state directly to Firestore
+    // Store config on the database
     async function saveConfigToCloud() {
       if (!isCloudActive || !currentUser) {
         saveLocalState();
@@ -1307,12 +1282,11 @@
           currentAccountId: state.currentAccountId
         });
       } catch (error) {
-        console.error("Error writing config to cloud:", error);
-        showToast("No se pudo respaldar en la nube: " + error.message, "error");
+        console.error("Error updating config document:", error);
       }
     }
 
-    // Log a new trade operation inside Firestore
+    // Save trade to the database
     async function uploadTradeToCloud(tradeObj) {
       if (!isCloudActive || !currentUser) {
         state.trades.unshift(tradeObj);
@@ -1326,20 +1300,16 @@
       const tradeDocRef = doc(db, 'artifacts', appId, 'users', userId, 'trades', tradeObj.id);
       
       try {
-        // Save the trade
         await setDoc(tradeDocRef, tradeObj);
-        
-        // Save updated accounts balances
         await saveConfigToCloud();
-        
-        showToast("Operación registrada en la nube");
+        showToast("Operación guardada en la nube");
       } catch (error) {
-        console.error("Error adding trade:", error);
-        showToast("Error de red: " + error.message, "error");
+        console.error("Error saving trade to cloud", error);
+        showToast("Error de guardado: " + error.message, "error");
       }
     }
 
-    // Wipe out a specific trade
+    // Delete trade
     async function deleteTradeFromCloud(tradeId) {
       if (!isCloudActive || !currentUser) {
         state.trades = state.trades.filter(t => t.id !== tradeId);
@@ -1348,6 +1318,7 @@
         return;
       }
 
+      updateConnectionStatus('syncing');
       const userId = currentUser.uid;
       const tradeDocRef = doc(db, 'artifacts', appId, 'users', userId, 'trades', tradeId);
       
@@ -1355,11 +1326,11 @@
         await deleteDoc(tradeDocRef);
         showToast("Operación eliminada de la nube", "warning");
       } catch (err) {
-        showToast("Error al eliminar: " + err.message, "error");
+        showToast("No se pudo eliminar: " + err.message, "error");
       }
     }
 
-    // Helper Math & Formatting Functions
+    // Metric Calculations & Render Helpers
     function getActiveAccounts() {
       return state.accounts.filter(a => a.status === 'active');
     }
@@ -1413,7 +1384,7 @@
       }
     }
 
-    // Interface Rendering
+    // Render components on UI
     function renderAccounts() {
       accountsContainer.innerHTML = '';
       state.accounts.forEach(account => {
@@ -1584,7 +1555,7 @@
         </table>
       `;
 
-      // Trigger delete triggers
+      // Trigger deletion triggers
       document.querySelectorAll('.delete-trade-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
           const row = e.target.closest('tr');
@@ -1690,7 +1661,119 @@
       });
     }
 
-    // App Listeners & Action Controls
+    // Modal UI Action controllers
+    function openAccountModal() {
+      if (!isCloudActive || !currentUser) {
+        showToast("Conexión con la nube inactiva. Configúrala primero.", "warning");
+        return;
+      }
+      
+      accountModal.classList.add('active');
+      modalEmail.value = '';
+      modalPass.value = '';
+
+      if (currentUser.isAnonymous) {
+        anonPanel.style.display = 'grid';
+        userPanel.style.display = 'none';
+        document.getElementById('accountModalTitle').textContent = 'Vincular Nube';
+        updateModalTabs();
+      } else {
+        anonPanel.style.display = 'none';
+        userPanel.style.display = 'grid';
+        userDisplayEmail.textContent = currentUser.email;
+        document.getElementById('accountModalTitle').textContent = 'Perfil de Usuario';
+      }
+    }
+
+    function updateModalTabs() {
+      if (currentAuthTab === 'register') {
+        tabRegister.classList.add('active');
+        tabLogin.classList.remove('active');
+        authSubmitBtn.textContent = 'Vincular Datos Existentes';
+      } else {
+        tabRegister.classList.remove('active');
+        tabLogin.classList.add('active');
+        authSubmitBtn.textContent = 'Iniciar Sesión';
+      }
+    }
+
+    // Event listeners
+    openAccountBtn.addEventListener('click', openAccountModal);
+    closeAccountModalBtn.addEventListener('click', () => accountModal.classList.remove('active'));
+
+    tabRegister.addEventListener('click', () => {
+      currentAuthTab = 'register';
+      updateModalTabs();
+    });
+
+    tabLogin.addEventListener('click', () => {
+      currentAuthTab = 'login';
+      updateModalTabs();
+    });
+
+    // Account Sign In / Sign Up handler inside modal
+    authSubmitBtn.addEventListener('click', async () => {
+      const email = modalEmail.value.trim();
+      const password = modalPass.value;
+
+      if (!email || !password) {
+        showToast("Completa email y contraseña", "warning");
+        return;
+      }
+      if (password.length < 6) {
+        showToast("La contraseña debe tener al menos 6 caracteres", "warning");
+        return;
+      }
+
+      authSubmitBtn.disabled = true;
+      authSubmitBtn.textContent = 'Procesando...';
+
+      try {
+        if (currentAuthTab === 'register') {
+          // Rule 3: Upgrade anonymous user account with linkWithCredential so trades are kept
+          const credential = EmailAuthProvider.credential(email, password);
+          await linkWithCredential(auth.currentUser, credential);
+          showToast("¡Sincronización exitosa! Cuenta creada.", "success");
+        } else {
+          // Log into existing account
+          await signInWithEmailAndPassword(auth, email, password);
+          showToast("¡Sesión iniciada correctamente!", "success");
+        }
+        accountModal.classList.remove('active');
+      } catch (err) {
+        console.error("Authentication error inside modal:", err);
+        let msg = "Error al autenticar. Verifica los datos.";
+        if (err.code === "auth/email-already-in-use") {
+          msg = "Este correo electrónico ya está registrado. Usa la pestaña 'Ya tengo una cuenta'.";
+        } else if (err.code === "auth/invalid-credential") {
+          msg = "Credenciales incorrectas o inválidas.";
+        } else if (err.code === "auth/credential-already-in-use") {
+          msg = "Esta cuenta ya está vinculada a otro correo.";
+        }
+        showCustomModal("Error de Autenticación", msg, false, null);
+      } finally {
+        authSubmitBtn.disabled = false;
+        updateModalTabs();
+      }
+    });
+
+    doLogoutBtn.addEventListener('click', async () => {
+      showCustomModal(
+        "Cerrar sesión", 
+        "¿Estás seguro de que quieres salir? Se creará una sesión temporal en este navegador.", 
+        true, 
+        async () => {
+          if (configUnsubscribe) configUnsubscribe();
+          if (tradesUnsubscribe) tradesUnsubscribe();
+          
+          await signOut(auth);
+          accountModal.classList.remove('active');
+          showToast("Cerraste sesión", "warning");
+        }
+      );
+    });
+
+    // Main Trade Form Submit Trigger
     tradeForm.addEventListener('submit', async e => {
       e.preventDefault();
       const accountId = tradeAccount.value;
@@ -1741,14 +1824,13 @@
         nextAccountName: nextAccount ? nextAccount.name : null
       };
 
-      // Reset form controls
+      // Reset fields
       tradeDate.value = getNowForInput();
       tradeSetup.value = '';
       tradeNotes.value = '';
       tradePnl.value = '';
       tradeRisk.value = state.settings.defaultRiskPercent;
       
-      // Save directly with Cloud controller
       await uploadTradeToCloud(newTrade);
     });
 
@@ -1781,7 +1863,7 @@
       el.addEventListener('change', renderPnlPreview);
     });
 
-    // Cloud Assistant UI Handles
+    // Setup Cloud Dialog Buttons
     document.getElementById('openSetupModalBtn').addEventListener('click', () => {
       const localConfigRaw = localStorage.getItem(FIREBASE_CONFIG_KEY);
       if (localConfigRaw) {
@@ -1798,7 +1880,7 @@
       const input = document.getElementById('firebaseConfigInput').value.trim();
       if (!input) {
         localStorage.removeItem(FIREBASE_CONFIG_KEY);
-        showToast("Se desactivó la configuración personalizada de la nube", "warning");
+        showToast("Configuración en la nube desactivada", "warning");
         document.getElementById('firebaseSetupModal').classList.remove('active');
         initFirebase();
         return;
@@ -1807,24 +1889,24 @@
       try {
         const parsed = JSON.parse(input);
         if (!parsed.apiKey || !parsed.projectId) {
-          throw new Error("Faltan campos obligatorios en el objeto FirebaseConfig");
+          throw new Error("Faltan parámetros obligatorios de Firebase");
         }
         localStorage.setItem(FIREBASE_CONFIG_KEY, JSON.stringify(parsed));
-        showToast("Configuración guardada. Conectando...", "success");
+        showToast("Ajustes guardados. Conectando...", "success");
         document.getElementById('firebaseSetupModal').classList.remove('active');
         initFirebase();
       } catch (err) {
-        showCustomModal("Error de Configuración", "El JSON provisto no es válido. Asegúrate de copiar el objeto de configuración tal cual te lo provee Firebase.", false, null);
+        showCustomModal("Error", "JSON no válido. Revisa que todas las claves tengan comillas dobles y no haya caracteres de sobra.", false, null);
       }
     });
 
-    // JSON Export/Import Handles
+    // Backup Import/Export triggers
     document.getElementById('exportBtn').addEventListener('click', () => {
       const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `switch-on-sl-backup-${new Date().toISOString().split('T')[0]}.json`;
+      a.download = `switch-on-sl-data-${new Date().toISOString().split('T')[0]}.json`;
       a.click();
       URL.revokeObjectURL(url);
     });
@@ -1847,17 +1929,17 @@
         
         await saveConfigToCloud();
         
-        // Upload imported trades
+        // Multi-add cloud trades if active (Rule 2 simple querying)
         if (isCloudActive && currentUser && imported.trades) {
           for (const trade of imported.trades) {
             await setDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'trades', trade.id || crypto.randomUUID()), trade);
           }
         }
         
-        showToast("Datos importados exitosamente");
+        showToast("Datos importados con éxito");
         render();
       } catch {
-        showCustomModal("Error de Importación", "No se pudo importar el archivo. Asegúrate de usar un archivo JSON válido exportado previamente.", false, null);
+        showCustomModal("Error", "No se pudo importar el archivo. El formato JSON no es compatible.", false, null);
       } finally {
         e.target.value = '';
       }
@@ -1866,7 +1948,7 @@
     document.getElementById('resetBtn').addEventListener('click', () => {
       showCustomModal(
         "Resetear todo", 
-        "Esto borrará de forma irreversible todas tus operaciones en el historial y restaurará los balances iniciales de las 3 cuentas. ¿Proceder?", 
+        "Esta acción eliminará de forma irreversible todas las operaciones del historial y restaurará los balances. ¿Proceder?", 
         true, 
         async () => {
           state = structuredClone(defaultState);
@@ -1874,20 +1956,19 @@
           tradeDate.value = getNowForInput();
           
           if (isCloudActive && currentUser) {
-            // Delete all cloud trades sequentially (Rule 2 simple querying)
             const userId = currentUser.uid;
             for(const t of state.trades) {
               await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'trades', t.id));
             }
           }
           await saveConfigToCloud();
-          showToast("Aplicación reseteada exitosamente", "warning");
+          showToast("Tracker reseteado por completo", "warning");
           render();
         }
       );
     });
 
-    // Initialize Page
+    // Page initialization
     tradeDate.value = getNowForInput();
     initFirebase();
   </script>
